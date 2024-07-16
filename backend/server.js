@@ -1,38 +1,48 @@
 import express from 'express';
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { initializeApp, cert } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore } from 'firebase-admin/firestore';
 import cors from 'cors';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCJeZvWfWYoJW71P63WqQxve5FwF0l-QyA",
-  authDomain: "beer-olympics-tournament-2024.firebaseapp.com",
-  projectId: "beer-olympics-tournament-2024",
-  storageBucket: "beer-olympics-tournament-2024.appspot.com",
-  messagingSenderId: "347415345072",
-  appId: "1:347415345072:web:9e58d02d63325d65cec875",
-  measurementId: "G-0SCD6G5Y6H"
+const serviceAccount = {
+  // Your Firebase Admin SDK service account key here
+  // You can download this from Firebase Console > Project settings > Service Accounts
 };
 
-// Initialize Firebase
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp);
+initializeApp({
+  credential: cert(serviceAccount)
+});
+
+const db = getFirestore();
+const auth = getAuth();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Enable CORS for all routes
 app.use(cors());
+app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('Hello from the backend!');
-});
+// Middleware to verify Firebase ID token
+const verifyToken = async (req, res, next) => {
+  const idToken = req.headers.authorization;
+  if (!idToken) {
+    return res.status(403).json({ error: 'No token provided' });
+  }
 
-// Example endpoint to fetch tournaments
-app.get('/api/tournaments', async (req, res) => {
   try {
-    const tournamentsRef = collection(db, 'tournaments');
-    const tournamentsSnapshot = await getDocs(tournamentsRef);
-    const tournaments = tournamentsSnapshot.docs.map(doc => ({
+    const decodedToken = await auth.verifyIdToken(idToken);
+    req.user = decodedToken;
+    next();
+  } catch (error) {
+    return res.status(403).json({ error: 'Invalid token' });
+  }
+};
+
+app.get('/api/tournaments', verifyToken, async (req, res) => {
+  try {
+    const tournamentsRef = db.collection('tournaments');
+    const snapshot = await tournamentsRef.get();
+    const tournaments = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
@@ -43,6 +53,6 @@ app.get('/api/tournaments', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`Backend server running on port ${port}`);
 });
