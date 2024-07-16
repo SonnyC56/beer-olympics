@@ -1,29 +1,45 @@
-const express = require("express");
-const admin = require("firebase-admin");
-const serviceAccount = require("./firebase-key.json");
+import express from 'express';
+import { initializeApp } from 'firebase/app';
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import cors from 'cors';
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+const firebaseConfig = {
+  apiKey: "AIzaSyCJeZvWfWYoJW71P63WqQxve5FwF0l-QyA",
+  authDomain: "beer-olympics-tournament-2024.firebaseapp.com",
+  projectId: "beer-olympics-tournament-2024",
+  storageBucket: "beer-olympics-tournament-2024.appspot.com",
+  messagingSenderId: "347415345072",
+  appId: "1:347415345072:web:9e58d02d63325d65cec875",
+  measurementId: "G-0SCD6G5Y6H"
+};
+
+// Initialize Firebase
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.get("/", (req, res) => {
-  res.send("Hello from the backend!");
+// Enable CORS for all routes
+app.use(cors());
+
+app.get('/', (req, res) => {
+  res.send('Hello from the backend!');
 });
 
-// Example endpoint using Firebase
-app.get("/tournaments", async (req, res) => {
+// Example endpoint to fetch tournaments
+app.get('/api/tournaments', async (req, res) => {
   try {
-    const snapshot = await admin.firestore().collection("tournaments").get();
-    const tournaments = snapshot.docs.map((doc) => ({
+    const tournamentsRef = collection(db, 'tournaments');
+    const tournamentsSnapshot = await getDocs(tournamentsRef);
+    const tournaments = tournamentsSnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     }));
     res.json(tournaments);
   } catch (error) {
-    res.status(500).json({ error: "Error fetching tournaments" });
+    console.error('Error fetching tournaments:', error);
+    res.status(500).json({ error: 'Failed to fetch tournaments' });
   }
 });
 

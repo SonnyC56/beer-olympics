@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
-    "firebase-admin": "^9.6.0"
-  }
+    "firebase": "^9.22.0",
+    "cors": "^2.8.5"
+  },
+  "type": "module"
 }
