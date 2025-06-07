@@ -1,4 +1,4 @@
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -21,4 +21,4 @@ export default function handler(req, res) {
     teamId: 'team-' + Math.random().toString(36).substr(2, 9),
     success: true
   });
-}
+};

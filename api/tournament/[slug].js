@@ -1,4 +1,4 @@
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   // Enable CORS for all origins in development, specific in production
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -26,4 +26,4 @@ export default function handler(req, res) {
       error: 'Tournament not found'
     });
   }
-}
+};
