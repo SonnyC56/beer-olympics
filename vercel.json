@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/trpc/[trpc].ts": {
-      "runtime": "@vercel/node"
+      "runtime": "nodejs18.x"
     }
   },
   "rewrites": [
