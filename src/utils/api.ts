@@ -12,6 +12,8 @@ class ApiClient {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
+    console.log(`API Request: ${options.method || 'GET'} ${url}`);
+    
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
@@ -20,11 +22,18 @@ class ApiClient {
       ...options,
     });
 
+    const responseText = await response.text();
+    console.log(`API Response: ${response.status} ${responseText}`);
+
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      throw new Error(`API Error: ${response.status} ${response.statusText} - ${responseText}`);
     }
 
-    return response.json();
+    try {
+      return JSON.parse(responseText);
+    } catch (parseError) {
+      throw new Error(`Failed to parse JSON response: ${responseText}`);
+    }
   }
 
   async get<T>(endpoint: string): Promise<T> {

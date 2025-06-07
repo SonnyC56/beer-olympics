@@ -44,10 +44,13 @@ export function JoinPage() {
   const loadTournament = async () => {
     try {
       setIsLoading(true);
+      console.log('Loading tournament:', slug);
       const data = await api.getTournament(slug!);
+      console.log('Tournament data:', data);
       setTournament(data);
     } catch (error) {
       console.error('Failed to load tournament:', error);
+      toast.error(`Failed to load tournament: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setTournament(null);
     } finally {
       setIsLoading(false);
