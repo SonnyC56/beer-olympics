@@ -18,7 +18,7 @@ const queryClient = new QueryClient();
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: import.meta.env.VITE_API_URL || 'http://localhost:3001',
+      url: 'https://jsonplaceholder.typicode.com', // Temporary mock API
     }),
   ],
 });
