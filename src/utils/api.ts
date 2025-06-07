@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
+const API_BASE_URL = import.meta.env.PROD 
+  ? '' // Use relative URLs in production 
+  : 'http://localhost:3000'; // Vercel dev server
 
 class ApiClient {
   private baseUrl: string;

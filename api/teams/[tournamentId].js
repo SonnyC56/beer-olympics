@@ -8,34 +8,30 @@ export default function handler(req, res) {
     return res.status(200).end();
   }
   
-  const { slug } = req.query;
+  const { tournamentId } = req.query;
   
-  console.log(`API: GET /api/leaderboard/${slug}`);
+  console.log(`API: GET /api/teams/${tournamentId}`);
   
   res.status(200).json([
     {
-      teamId: 'team-1',
-      teamName: 'Beer Warriors',
+      id: 'team-1',
+      tournamentId: tournamentId,
+      name: 'Beer Warriors',
       colorHex: '#ef4444',
       flagCode: '🇺🇸',
-      position: 1,
-      totalPoints: 25
+      memberIds: ['user-1'],
+      captainId: 'user-1',
+      createdAt: '2024-06-01T00:00:00Z'
     },
     {
-      teamId: 'team-2',
-      teamName: 'Hop Stars',
+      id: 'team-2',
+      tournamentId: tournamentId,
+      name: 'Hop Stars',
       colorHex: '#3b82f6',
       flagCode: '🇬🇧',
-      position: 2,
-      totalPoints: 15
-    },
-    {
-      teamId: 'team-3',
-      teamName: 'Golden Ales',
-      colorHex: '#eab308',
-      flagCode: '🇨🇦',
-      position: 3,
-      totalPoints: 12
+      memberIds: ['user-2'],
+      captainId: 'user-2',
+      createdAt: '2024-06-01T00:00:00Z'
     }
   ]);
 }
