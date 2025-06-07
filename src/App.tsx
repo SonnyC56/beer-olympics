@@ -13,6 +13,7 @@ import { LeaderboardPage } from './pages/LeaderboardPage';
 import { DisplayPage } from './pages/DisplayPage';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { TestPage } from './pages/TestPage';
+import { CreateTournamentPage } from './pages/CreateTournamentPage';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
                 <Route path="/display/:slug" element={<DisplayPage />} />
                 <Route path="/auth/callback" element={<AuthCallbackPage />} />
                 <Route path="/test" element={<TestPage />} />
+                <Route path="/create" element={<CreateTournamentPage />} />
               </Routes>
               <Toaster theme="dark" position="top-center" />
             </div>

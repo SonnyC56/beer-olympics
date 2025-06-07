@@ -20,8 +20,8 @@ const getBaseUrl = () => {
     if (import.meta.env.PROD) {
       return '';
     }
-    // In development, use Vercel dev server
-    return 'http://localhost:3000';
+    // In development, use current origin (Vite dev server)
+    return window.location.origin;
   }
   return '';
 };
