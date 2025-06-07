@@ -75,7 +75,7 @@ export function HomePage() {
             >
               <Button
                 variant="ghost"
-                onClick={signIn}
+                onClick={() => signIn()}
                 className="text-white hover:bg-white/10 border border-white/20"
               >
                 <User className="w-4 h-4 mr-2" />

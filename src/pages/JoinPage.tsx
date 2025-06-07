@@ -292,7 +292,7 @@ export function JoinPage() {
                 {!user && (
                   <Button
                     variant="outline"
-                    onClick={signIn}
+                    onClick={() => signIn()}
                     className="flex-1 h-12 border-white/30 text-white hover:bg-white/10"
                   >
                     Sign In

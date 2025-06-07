@@ -78,7 +78,7 @@ export function CreateTournamentPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <Button
-                onClick={signIn}
+                onClick={() => signIn()}
                 className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold"
               >
                 Sign In with Google

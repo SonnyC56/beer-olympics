@@ -5,9 +5,12 @@ let bucket: Bucket | null = null;
 let isConnecting = false;
 
 export class CouchbaseError extends Error {
-  constructor(message: string, public code?: string) {
+  public code?: string;
+  
+  constructor(message: string, code?: string) {
     super(message);
     this.name = 'CouchbaseError';
+    this.code = code;
   }
 }
 
@@ -58,7 +61,7 @@ export async function getCouchbaseConnection() {
   } catch (error) {
     cluster = null;
     bucket = null;
-    throw new CouchbaseError(`Failed to connect to Couchbase: ${error.message}`);
+    throw new CouchbaseError(`Failed to connect to Couchbase: ${error instanceof Error ? error.message : String(error)}`);
   } finally {
     isConnecting = false;
   }
@@ -89,10 +92,10 @@ export async function getDocument(key: string, collection = '_default') {
     const result = await coll.get(key);
     return result.content;
   } catch (error) {
-    if (error.name === 'DocumentNotFoundError') {
+    if (error instanceof Error && error.name === 'DocumentNotFoundError') {
       return null;
     }
-    throw new CouchbaseError(`Failed to get document ${key}: ${error.message}`);
+    throw new CouchbaseError(`Failed to get document ${key}: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -102,7 +105,7 @@ export async function upsertDocument(key: string, value: any, collection = '_def
     const result = await coll.upsert(key, value);
     return result;
   } catch (error) {
-    throw new CouchbaseError(`Failed to upsert document ${key}: ${error.message}`);
+    throw new CouchbaseError(`Failed to upsert document ${key}: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
@@ -112,9 +115,9 @@ export async function removeDocument(key: string, collection = '_default') {
     const result = await coll.remove(key);
     return result;
   } catch (error) {
-    if (error.name === 'DocumentNotFoundError') {
+    if (error instanceof Error && error.name === 'DocumentNotFoundError') {
       return null;
     }
-    throw new CouchbaseError(`Failed to remove document ${key}: ${error.message}`);
+    throw new CouchbaseError(`Failed to remove document ${key}: ${error instanceof Error ? error.message : String(error)}`);
   }
 }

@@ -79,7 +79,7 @@ export function TestPage() {
                   Sign Out
                 </Button>
               ) : (
-                <Button onClick={signIn}>
+                <Button onClick={() => signIn()}>
                   Sign In with Google
                 </Button>
               )}

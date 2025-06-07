@@ -3,13 +3,13 @@ import { router, publicProcedure } from '../trpc';
 import { query } from '../../services/couchbase';
 import { TRPCError } from '@trpc/server';
 
-interface LeaderboardRow {
-  teamId: string;
-  teamName: string;
-  colorHex: string;
-  flagCode: string;
-  total: number;
-}
+// interface LeaderboardRow {
+//   teamId: string;
+//   teamName: string;
+//   colorHex: string;
+//   flagCode: string;
+//   total: number;
+// }
 
 interface TeamStatsRow {
   eventName: string;

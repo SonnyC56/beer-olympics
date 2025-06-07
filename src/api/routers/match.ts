@@ -116,12 +116,10 @@ export const matchRouter = router({
           });
         }
         
-        // Get match to verify user is from opposing team
-        const match = await getDocument(`match::${submission.matchId}`) as Match;
-        const opposingTeamId = match.teamA === submission.winnerId ? match.teamB : match.teamA;
-        
         // TODO: Verify ctx.user is a member of the opposing team
         // This would require looking up team membership
+        // const match = await getDocument(`match::${submission.matchId}`) as Match;
+        // const opposingTeamId = match.teamA === submission.winnerId ? match.teamB : match.teamA;
         
         if (input.confirm) {
           await confirmScore(input.submissionId);
@@ -197,6 +195,7 @@ export const matchRouter = router({
           teamB: input.teamB,
           round: input.round,
           isComplete: false,
+          mediaIds: [],
           startTime: input.startTime || new Date().toISOString(),
           createdAt: new Date().toISOString(),
         };
