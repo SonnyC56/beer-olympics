@@ -1,4 +1,6 @@
-module.exports = async (req, res) => {
+import { getCollection } from '../../src/services/couchbase.js';
+
+export default async function handler(req, res) {
   try {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,6 +13,7 @@ module.exports = async (req, res) => {
     
     const { slug } = req.query;
     
+    // First check for test tournament
     if (slug === 'test-tournament') {
       return res.status(200).json({
         slug: 'test-tournament',
@@ -20,10 +23,21 @@ module.exports = async (req, res) => {
         isOpen: true,
         createdAt: '2024-06-01T00:00:00Z'
       });
-    } else {
-      return res.status(404).json({ 
-        error: 'Tournament not found'
-      });
+    }
+    
+    try {
+      // Try to get from Couchbase
+      const collection = await getCollection();
+      const result = await collection.get(`tournament::${slug}`);
+      return res.status(200).json(result.content);
+    } catch (dbError) {
+      // If document not found in Couchbase
+      if (dbError.name === 'DocumentNotFoundError') {
+        return res.status(404).json({ 
+          error: 'Tournament not found'
+        });
+      }
+      throw dbError;
     }
   } catch (error) {
     console.error('Tournament API error:', error);
@@ -32,4 +46,4 @@ module.exports = async (req, res) => {
       message: error.message 
     });
   }
-};
+}

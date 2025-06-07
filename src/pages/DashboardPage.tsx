@@ -1,48 +1,45 @@
-import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Trophy, Calendar, Target, Camera } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { api } from '@/utils/api';
+import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 
 export function DashboardPage() {
   const { slug } = useParams<{ slug: string }>();
-  const [tournament, setTournament] = useState<any>(null);
-  const [upcomingMatches, setUpcomingMatches] = useState<any[]>([]);
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (slug) {
-      loadData();
-    }
-  }, [slug]);
-
-  const loadData = async () => {
-    try {
-      const [tournamentData, matchesData, leaderboardData] = await Promise.all([
-        api.getTournament(slug!),
-        api.getMatches(slug!),
-        api.getLeaderboard(slug!)
-      ]);
-      
-      setTournament(tournamentData);
-      setUpcomingMatches(matchesData as any[]);
-      setLeaderboard(leaderboardData as any[]);
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
-    }
-  };
+  
+  const { data: tournament, isLoading: tournamentLoading } = trpc.tournament.getBySlug.useQuery(
+    { slug: slug! },
+    { enabled: !!slug }
+  );
+  
+  const { data: upcomingMatches = [] } = trpc.match.getUpcomingMatches.useQuery(
+    { tournamentId: slug! },
+    { enabled: !!slug }
+  );
+  
+  const { data: leaderboard = [] } = trpc.leaderboard.list.useQuery(
+    { slug: slug! },
+    { enabled: !!slug }
+  );
 
   const handleSubmitScore = () => {
     toast.info('Score submission modal coming soon!');
   };
 
-  if (!tournament) {
+  if (tournamentLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-xl">Loading tournament...</div>
+      </div>
+    );
+  }
+
+  if (!tournament) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Tournament not found</div>
       </div>
     );
   }

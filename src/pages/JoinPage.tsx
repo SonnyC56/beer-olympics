@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Users, Flag, Palette } from 'lucide-react';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/auth';
-import { api } from '@/utils/api';
+import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 
 const TEAM_COLORS = [
@@ -31,31 +31,39 @@ export function JoinPage() {
   const [selectedFlag, setSelectedFlag] = useState(FLAGS[0]);
   const [userName, setUserName] = useState('');
 
-  const [tournament, setTournament] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
 
-  useEffect(() => {
-    if (slug) {
-      loadTournament();
+  const { data: tournament, isLoading, error } = trpc.tournament.getBySlug.useQuery(
+    { slug: slug! },
+    { 
+      enabled: !!slug,
+      retry: 1,
+      onError: (err) => {
+        console.error('Failed to load tournament:', err);
+        toast.error(`Failed to load tournament: ${err.message}`);
+      },
+      onSuccess: (data: any) => {
+        console.log('Tournament loaded:', data);
+      }
     }
-  }, [slug]);
+  );
+  
+  // Log the current slug
+  console.log('Current slug:', slug);
 
-  const loadTournament = async () => {
-    try {
-      setIsLoading(true);
-      console.log('Loading tournament:', slug);
-      const data = await api.getTournament(slug!);
-      console.log('Tournament data:', data);
-      setTournament(data);
-    } catch (error) {
-      console.error('Failed to load tournament:', error);
-      toast.error(`Failed to load tournament: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      setTournament(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const joinTeamMutation = trpc.team.joinPublic.useMutation({
+    onSuccess: () => {
+      toast.success('Team created successfully!');
+      navigate(`/dashboard/${slug}`);
+    },
+    onError: (error) => {
+      toast.error(`Failed to create team: ${error.message}`);
+      console.error('Join team error:', error);
+    },
+    onSettled: () => {
+      setIsJoining(false);
+    },
+  });
 
   const handleJoin = async () => {
     if (!teamName.trim()) {
@@ -68,41 +76,27 @@ export function JoinPage() {
       return;
     }
 
-    try {
-      let userId = user?.id;
-      let userDisplayName = user?.name || userName;
+    let userId = user?.id;
+    const userDisplayName = user?.name || userName;
 
-      if (!user) {
-        // Create a temporary user
-        userId = 'temp-' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('tempUser', JSON.stringify({
-          id: userId,
-          name: userName,
-        }));
-      }
-
-      setIsJoining(true);
-      try {
-        await api.joinTeam({
-          slug: slug!,
-          teamName: teamName,
-          colorHex: selectedColor.hex,
-          flagCode: selectedFlag,
-          userId: userId!,
-          userName: userDisplayName,
-        });
-        
-        toast.success('Team created successfully!');
-        navigate(`/dashboard/${slug}`);
-      } catch (error) {
-        toast.error('Failed to create team');
-        console.error('Join team error:', error);
-      } finally {
-        setIsJoining(false);
-      }
-    } catch (error) {
-      toast.error('Failed to join tournament');
+    if (!user) {
+      // Create a temporary user
+      userId = 'temp-' + Math.random().toString(36).substring(2, 9);
+      localStorage.setItem('tempUser', JSON.stringify({
+        id: userId,
+        name: userName,
+      }));
     }
+
+    setIsJoining(true);
+    joinTeamMutation.mutate({
+      slug: slug!,
+      teamName: teamName,
+      colorHex: selectedColor.hex,
+      flagCode: selectedFlag,
+      userId: userId!,
+      userName: userDisplayName,
+    });
   };
 
   if (isLoading) {

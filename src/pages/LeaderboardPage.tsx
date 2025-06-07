@@ -1,33 +1,20 @@
-import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Trophy, Medal, Award } from 'lucide-react';
-import { api } from '@/utils/api';
+import { trpc } from '@/utils/trpc';
 
 export function LeaderboardPage() {
   const { slug } = useParams<{ slug: string }>();
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
-  const [tournament, setTournament] = useState<any>(null);
-
-  useEffect(() => {
-    if (slug) {
-      loadData();
-    }
-  }, [slug]);
-
-  const loadData = async () => {
-    try {
-      const [leaderboardData, tournamentData] = await Promise.all([
-        api.getLeaderboard(slug!),
-        api.getTournament(slug!)
-      ]);
-      
-      setLeaderboard(leaderboardData as any[]);
-      setTournament(tournamentData);
-    } catch (error) {
-      console.error('Failed to load leaderboard data:', error);
-    }
-  };
+  
+  const { data: tournament, isLoading: tournamentLoading } = trpc.tournament.getBySlug.useQuery(
+    { slug: slug! },
+    { enabled: !!slug }
+  );
+  
+  const { data: leaderboard = [], isLoading: leaderboardLoading } = trpc.leaderboard.list.useQuery(
+    { slug: slug! },
+    { enabled: !!slug }
+  );
 
   const getMedalIcon = (position: number) => {
     switch (position) {
@@ -42,10 +29,18 @@ export function LeaderboardPage() {
     }
   };
 
-  if (!tournament || !leaderboard) {
+  if (tournamentLoading || leaderboardLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse text-xl">Loading leaderboard...</div>
+      </div>
+    );
+  }
+
+  if (!tournament) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl">Tournament not found</div>
       </div>
     );
   }
