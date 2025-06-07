@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Users, Flag, Palette } from 'lucide-react';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/auth';
-import { trpc } from '@/utils/trpc';
+import { api } from '@/utils/api';
 import { toast } from 'sonner';
 
 const TEAM_COLORS = [
@@ -31,20 +31,28 @@ export function JoinPage() {
   const [selectedFlag, setSelectedFlag] = useState(FLAGS[0]);
   const [userName, setUserName] = useState('');
 
-  const { data: tournament, isLoading } = trpc.tournament.getBySlug.useQuery(
-    { slug: slug! },
-    { enabled: !!slug }
-  );
+  const [tournament, setTournament] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isJoining, setIsJoining] = useState(false);
 
-  const joinTeam = trpc.team.joinPublic.useMutation({
-    onSuccess: () => {
-      toast.success('Team created successfully!');
-      navigate(`/dashboard/${slug}`);
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+  useEffect(() => {
+    if (slug) {
+      loadTournament();
+    }
+  }, [slug]);
+
+  const loadTournament = async () => {
+    try {
+      setIsLoading(true);
+      const data = await api.getTournament(slug!);
+      setTournament(data);
+    } catch (error) {
+      console.error('Failed to load tournament:', error);
+      setTournament(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleJoin = async () => {
     if (!teamName.trim()) {
@@ -70,14 +78,25 @@ export function JoinPage() {
         }));
       }
 
-      joinTeam.mutate({
-        slug: slug!,
-        teamName: teamName,
-        colorHex: selectedColor.hex,
-        flagCode: selectedFlag,
-        userId: userId!,
-        userName: userDisplayName,
-      });
+      setIsJoining(true);
+      try {
+        await api.joinTeam({
+          slug: slug!,
+          teamName: teamName,
+          colorHex: selectedColor.hex,
+          flagCode: selectedFlag,
+          userId: userId!,
+          userName: userDisplayName,
+        });
+        
+        toast.success('Team created successfully!');
+        navigate(`/dashboard/${slug}`);
+      } catch (error) {
+        toast.error('Failed to create team');
+        console.error('Join team error:', error);
+      } finally {
+        setIsJoining(false);
+      }
     } catch (error) {
       toast.error('Failed to join tournament');
     }
@@ -226,11 +245,11 @@ export function JoinPage() {
               )}
               <Button
                 onClick={handleJoin}
-                disabled={joinTeam.isPending}
+                disabled={isJoining}
                 className="flex-1"
                 size="lg"
               >
-                {joinTeam.isPending ? 'Creating...' : 'Create Team'}
+                {isJoining ? 'Creating...' : 'Create Team'}
               </Button>
             </div>
           </CardContent>

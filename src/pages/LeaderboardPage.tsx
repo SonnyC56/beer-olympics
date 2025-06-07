@@ -1,20 +1,33 @@
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Trophy, Medal, Award } from 'lucide-react';
-import { trpc } from '@/utils/trpc';
+import { api } from '@/utils/api';
 
 export function LeaderboardPage() {
   const { slug } = useParams<{ slug: string }>();
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [tournament, setTournament] = useState<any>(null);
 
-  const { data: leaderboard } = trpc.leaderboard.list.useQuery(
-    { slug: slug! },
-    { enabled: !!slug }
-  );
+  useEffect(() => {
+    if (slug) {
+      loadData();
+    }
+  }, [slug]);
 
-  const { data: tournament } = trpc.tournament.getBySlug.useQuery(
-    { slug: slug! },
-    { enabled: !!slug }
-  );
+  const loadData = async () => {
+    try {
+      const [leaderboardData, tournamentData] = await Promise.all([
+        api.getLeaderboard(slug!),
+        api.getTournament(slug!)
+      ]);
+      
+      setLeaderboard(leaderboardData as any[]);
+      setTournament(tournamentData);
+    } catch (error) {
+      console.error('Failed to load leaderboard data:', error);
+    }
+  };
 
   const getMedalIcon = (position: number) => {
     switch (position) {
