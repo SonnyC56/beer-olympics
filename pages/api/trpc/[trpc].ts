@@ -1,7 +1,6 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createNextApiHandler } from '@trpc/server/adapters/next';
-import { appRouter } from '../../src/api/routers';
-import type { Context } from '../../src/api/trpc';
+import { appRouter } from '../../../src/api/routers';
+import type { Context } from '../../../src/api/trpc';
 
 export default createNextApiHandler({
   router: appRouter,
