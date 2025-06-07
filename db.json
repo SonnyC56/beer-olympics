@@ -1,0 +1,66 @@
+{
+  "tournaments": [
+    {
+      "id": "test-tournament",
+      "slug": "test-tournament",
+      "name": "Test Beer Olympics",
+      "date": "2024-06-15",
+      "ownerId": "user-123",
+      "isOpen": true,
+      "createdAt": "2024-06-01T00:00:00Z"
+    }
+  ],
+  "teams": [
+    {
+      "id": "team-1",
+      "tournamentId": "test-tournament",
+      "name": "Beer Warriors",
+      "colorHex": "#ef4444",
+      "flagCode": "🇺🇸",
+      "memberIds": ["user-123"],
+      "captainId": "user-123",
+      "createdAt": "2024-06-01T00:00:00Z"
+    },
+    {
+      "id": "team-2",
+      "tournamentId": "test-tournament",
+      "name": "Hop Stars",
+      "colorHex": "#3b82f6",
+      "flagCode": "🇬🇧",
+      "memberIds": ["user-456"],
+      "captainId": "user-456",
+      "createdAt": "2024-06-01T00:00:00Z"
+    }
+  ],
+  "matches": [
+    {
+      "id": "match-1",
+      "eventId": "event-1",
+      "round": 1,
+      "stationId": "station-1",
+      "teamA": "team-1",
+      "teamB": "team-2",
+      "isComplete": false,
+      "mediaIds": [],
+      "createdAt": "2024-06-01T00:00:00Z"
+    }
+  ],
+  "leaderboard": [
+    {
+      "teamId": "team-1",
+      "teamName": "Beer Warriors",
+      "colorHex": "#ef4444",
+      "flagCode": "🇺🇸",
+      "position": 1,
+      "totalPoints": 25
+    },
+    {
+      "teamId": "team-2",
+      "teamName": "Hop Stars",
+      "colorHex": "#3b82f6",
+      "flagCode": "🇬🇧",
+      "position": 2,
+      "totalPoints": 15
+    }
+  ]
+}

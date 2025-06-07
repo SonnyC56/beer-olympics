@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/trpc/[trpc].ts": {
+      "runtime": "@vercel/node"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/trpc/(.*)",
+      "destination": "/api/trpc/[trpc]"
+    }
+  ]
+}
