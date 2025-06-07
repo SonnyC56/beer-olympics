@@ -36,7 +36,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async () => {
     try {
       // Get OAuth URL from API
-      const response = await fetch('/api/auth/google');
+      const apiUrl = import.meta.env.DEV 
+        ? 'http://localhost:3000/api/auth/google'
+        : '/api/auth/google';
+      
+      const response = await fetch(apiUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get auth URL: ${response.status}`);
+      }
+      
       const { url } = await response.json();
       
       // Redirect to OAuth provider (or mock for development)

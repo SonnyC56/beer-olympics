@@ -25,7 +25,7 @@ const FLAGS = ['🇺🇸', '🇬🇧', '🇨🇦', '🇦🇺', '🇩🇪', '🇫
 export function JoinPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { user, signIn } = useAuth();
+  const { user, signIn, signOut } = useAuth();
   const [teamName, setTeamName] = useState('');
   const [selectedColor, setSelectedColor] = useState(TEAM_COLORS[0]);
   const [selectedFlag, setSelectedFlag] = useState(FLAGS[0]);
@@ -142,71 +142,106 @@ export function JoinPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-amber-900/20 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full"
+        className="max-w-lg w-full"
       >
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl">Join {tournament.name}</CardTitle>
-            <CardDescription>
-              Create your team and start competing
-            </CardDescription>
+        <Card className="bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
+          <CardHeader className="text-center space-y-4">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", bounce: 0.5, delay: 0.2 }}
+              className="mx-auto w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center"
+            >
+              <span className="text-2xl">🏆</span>
+            </motion.div>
+            <div>
+              <CardTitle className="text-3xl text-white mb-2">Join {tournament.name}</CardTitle>
+              <CardDescription className="text-gray-300 text-lg">
+                Create your team and start competing in the ultimate backyard championship
+              </CardDescription>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-8">
             {!user && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Your Name</label>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="space-y-3"
+              >
+                <label className="text-sm font-medium text-gray-300">Your Name</label>
                 <Input
                   placeholder="Enter your name"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
+                  className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:bg-white/20"
                 />
-              </div>
+              </motion.div>
             )}
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-2">
-                <Users className="w-4 h-4" />
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="space-y-3"
+            >
+              <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                <Users className="w-4 h-4 text-amber-400" />
                 Team Name
               </label>
               <Input
                 placeholder="Enter team name"
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
+                className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:bg-white/20"
               />
-            </div>
+            </motion.div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-2">
-                <Palette className="w-4 h-4" />
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="space-y-3"
+            >
+              <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                <Palette className="w-4 h-4 text-amber-400" />
                 Team Color
               </label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-3">
                 {TEAM_COLORS.map((color) => (
                   <motion.button
                     key={color.hex}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setSelectedColor(color)}
-                    className={`h-12 rounded-xl transition-all ${
+                    className={`h-14 rounded-xl transition-all shadow-lg ${
                       selectedColor.hex === color.hex
-                        ? 'ring-2 ring-offset-2 ring-offset-gray-900'
-                        : ''
+                        ? 'ring-3 ring-amber-400 ring-offset-2 ring-offset-gray-900'
+                        : 'hover:scale-105'
                     }`}
                     style={{ 
-                      backgroundColor: color.hex
+                      backgroundColor: color.hex,
+                      boxShadow: selectedColor.hex === color.hex 
+                        ? `0 0 20px ${color.hex}40` 
+                        : `0 4px 12px ${color.hex}30`
                     }}
                   />
                 ))}
               </div>
-            </div>
+            </motion.div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-2">
-                <Flag className="w-4 h-4" />
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="space-y-3"
+            >
+              <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                <Flag className="w-4 h-4 text-amber-400" />
                 Team Flag
               </label>
               <div className="grid grid-cols-6 gap-2">
@@ -216,37 +251,70 @@ export function JoinPage() {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setSelectedFlag(flag)}
-                    className={`text-2xl p-2 rounded-xl transition-all ${
+                    className={`text-2xl p-3 rounded-xl transition-all ${
                       selectedFlag === flag
-                        ? 'bg-gray-800 ring-2 ring-amber-500'
-                        : 'hover:bg-gray-800'
+                        ? 'bg-amber-500/20 ring-2 ring-amber-400 shadow-lg'
+                        : 'bg-white/5 hover:bg-white/10'
                     }`}
                   >
                     {flag}
                   </motion.button>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
-            <div className="flex gap-4">
-              {!user && (
-                <Button
-                  variant="outline"
-                  onClick={signIn}
-                  className="flex-1"
-                >
-                  Sign In
-                </Button>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="space-y-4"
+            >
+              {user && (
+                <div className="p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-green-400">Signed in as:</p>
+                      <p className="font-medium text-white truncate">{user.name}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      onClick={signOut}
+                      size="sm"
+                      className="text-green-400 hover:bg-green-500/10"
+                    >
+                      Sign Out
+                    </Button>
+                  </div>
+                </div>
               )}
-              <Button
-                onClick={handleJoin}
-                disabled={isJoining}
-                className="flex-1"
-                size="lg"
-              >
-                {isJoining ? 'Creating...' : 'Create Team'}
-              </Button>
-            </div>
+              
+              <div className="flex gap-3">
+                {!user && (
+                  <Button
+                    variant="outline"
+                    onClick={signIn}
+                    className="flex-1 h-12 border-white/30 text-white hover:bg-white/10"
+                  >
+                    Sign In
+                  </Button>
+                )}
+                <Button
+                  onClick={handleJoin}
+                  disabled={isJoining}
+                  className={`h-12 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-lg ${!user ? 'flex-1' : 'w-full'}`}
+                  size="lg"
+                >
+                  {isJoining ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Creating...
+                    </div>
+                  ) : (
+                    'Create Team'
+                  )}
+                </Button>
+              </div>
+            </motion.div>
           </CardContent>
         </Card>
       </motion.div>
