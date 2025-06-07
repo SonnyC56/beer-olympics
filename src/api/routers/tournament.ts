@@ -1,32 +1,43 @@
 import { z } from 'zod';
 import { router, publicProcedure, protectedProcedure } from '../trpc';
-import { getCollection } from '../../services/couchbase';
+import { getDocument, upsertDocument, query } from '../../services/couchbase';
 import { nanoid } from 'nanoid';
 import type { Tournament, Team } from '../../types';
+import { TRPCError } from '@trpc/server';
+import { triggerEvent, getTournamentChannel } from '../../services/pusher';
 
 export const tournamentRouter = router({
   create: protectedProcedure
     .input(z.object({
-      name: z.string(),
-      date: z.string(),
+      name: z.string().min(1).max(100),
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     }))
     .mutation(async ({ input, ctx }) => {
-      const collection = await getCollection();
-      const slug = input.name.toLowerCase().replace(/\s+/g, '-') + '-' + nanoid(6);
-      
-      const tournament: Tournament = {
-        _type: 'tournament',
-        slug,
-        name: input.name,
-        date: input.date,
-        ownerId: ctx.user.id,
-        isOpen: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      
-      await collection.insert(`tournament::${slug}`, tournament);
-      return { slug };
+      try {
+        const slug = input.name.toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .substring(0, 50) + '-' + nanoid(6);
+        
+        const tournament: Tournament = {
+          _type: 'tournament',
+          slug,
+          name: input.name,
+          date: input.date,
+          ownerId: ctx.user.id,
+          isOpen: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        
+        await upsertDocument(`tournament::${slug}`, tournament);
+        return { slug };
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to create tournament',
+        });
+      }
     }),
 
   getBySlug: publicProcedure
@@ -34,26 +45,24 @@ export const tournamentRouter = router({
       slug: z.string(),
     }))
     .query(async ({ input }) => {
-      // Return test data for test-tournament
-      if (input.slug === 'test-tournament') {
-        return {
-          _type: 'tournament',
-          slug: 'test-tournament',
-          name: 'Test Beer Olympics',
-          date: '2024-06-15',
-          ownerId: 'user-123',
-          isOpen: true,
-          createdAt: '2024-06-01T00:00:00Z',
-          updatedAt: '2024-06-01T00:00:00Z',
-        } as Tournament;
-      }
-      
-      const collection = await getCollection();
       try {
-        const result = await collection.get(`tournament::${input.slug}`);
-        return result.content as Tournament;
+        const tournament = await getDocument(`tournament::${input.slug}`);
+        
+        if (!tournament) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Tournament not found',
+          });
+        }
+        
+        return tournament as Tournament;
       } catch (error) {
-        throw new Error('Tournament not found');
+        if (error instanceof TRPCError) throw error;
+        
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch tournament',
+        });
       }
     }),
 
@@ -63,21 +72,43 @@ export const tournamentRouter = router({
       isOpen: z.boolean(),
     }))
     .mutation(async ({ input, ctx }) => {
-      const collection = await getCollection();
-      const docId = `tournament::${input.slug}`;
-      
-      const result = await collection.get(docId);
-      const tournament = result.content as Tournament;
-      
-      if (tournament.ownerId !== ctx.user.id) {
-        throw new Error('Not authorized');
+      try {
+        const tournament = await getDocument(`tournament::${input.slug}`) as Tournament;
+        
+        if (!tournament) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Tournament not found',
+          });
+        }
+        
+        if (tournament.ownerId !== ctx.user.id) {
+          throw new TRPCError({
+            code: 'FORBIDDEN',
+            message: 'Not authorized to modify this tournament',
+          });
+        }
+        
+        tournament.isOpen = input.isOpen;
+        tournament.updatedAt = new Date().toISOString();
+        
+        await upsertDocument(`tournament::${input.slug}`, tournament);
+        
+        // Trigger real-time event for tournament status change
+        await triggerEvent(getTournamentChannel(input.slug), 'tournament-status', {
+          tournamentId: input.slug,
+          isOpen: input.isOpen,
+        });
+        
+        return { ok: true };
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to update tournament',
+        });
       }
-      
-      tournament.isOpen = input.isOpen;
-      tournament.updatedAt = new Date().toISOString();
-      await collection.replace(docId, tournament);
-      
-      return { ok: true };
     }),
 
   listTeams: publicProcedure
@@ -85,17 +116,20 @@ export const tournamentRouter = router({
       tournamentId: z.string(),
     }))
     .query(async ({ input }) => {
-      const collection = await getCollection();
-      const query = `
-        SELECT * FROM \`beer_olympics\`._default
-        WHERE _type = 'team' AND tournamentId = $1
-        ORDER BY createdAt
-      `;
-      
-      const result = await collection.cluster.query(query, {
-        parameters: [input.tournamentId],
-      });
-      
-      return result.rows as Team[];
+      try {
+        const result = await query(
+          `SELECT * FROM \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default
+           WHERE _type = 'team' AND tournamentId = $1
+           ORDER BY createdAt`,
+          { parameters: [input.tournamentId] }
+        );
+        
+        return result.rows as Team[];
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch teams',
+        });
+      }
     }),
 });

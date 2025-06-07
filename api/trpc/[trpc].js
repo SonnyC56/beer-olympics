@@ -1,15 +1,92 @@
-// Mock tRPC handler for development
+import { verifyJWT, parseAuthCookie } from '../../src/services/auth.js';
+import { appRouter } from '../../src/api/routers/index.js';
+import { createTRPCContext } from '../../src/api/trpc.js';
+import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
+import { applySecurityHeaders, applyCorsHeaders, apiRateLimit, getClientIp } from '../../src/utils/middleware.js';
+
+// Rate limiting store (in production, use Redis or similar)
+const rateLimitStore = new Map();
+
+// tRPC handler for production
 export default async function handler(req, res) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  // Apply security headers
+  applySecurityHeaders(res);
+  applyCorsHeaders(res, req.headers.origin);
+  
+  // Apply rate limiting
+  const clientIp = getClientIp(req);
+  const now = Date.now();
+  const windowMs = 60 * 1000; // 1 minute
+  const maxRequests = 60;
+  
+  const key = `${clientIp}:${Math.floor(now / windowMs)}`;
+  const current = rateLimitStore.get(key) || 0;
+  
+  if (current >= maxRequests) {
+    return res.status(429).json({
+      error: 'Too many requests, please try again later.',
+    });
+  }
+  
+  rateLimitStore.set(key, current + 1);
+  
+  // Clean up old entries
+  for (const [storeKey] of rateLimitStore) {
+    const keyTime = parseInt(storeKey.split(':')[1]) * windowMs;
+    if (now - keyTime > windowMs * 2) {
+      rateLimitStore.delete(storeKey);
+    }
+  }
   
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
   
+  // Extract user from auth token
+  let user = null;
+  const token = parseAuthCookie(req.headers.cookie);
+  if (token) {
+    user = verifyJWT(token);
+  }
+  
+  // If we have real tRPC setup, use it
+  if (process.env.COUCHBASE_CONNECTION_STRING) {
+    try {
+      const response = await fetchRequestHandler({
+        endpoint: '/api/trpc',
+        req: new Request(req.url, {
+          method: req.method,
+          headers: req.headers,
+          body: req.body,
+        }),
+        router: appRouter,
+        createContext: () => createTRPCContext({ user }),
+      });
+      
+      // Forward the response
+      response.headers.forEach((value, key) => {
+        res.setHeader(key, value);
+      });
+      res.status(response.status);
+      const body = await response.text();
+      return res.end(body);
+    } catch (error) {
+      console.error('tRPC handler error:', error);
+      return res.status(500).json({ 
+        error: {
+          message: error.message || 'Internal server error',
+          code: -32603,
+          data: {
+            code: 'INTERNAL_SERVER_ERROR',
+            httpStatus: 500,
+          }
+        }
+      });
+    }
+  }
+  
+  // Fall back to mock data for development
   try {
     // Get the procedure path from URL
     const url = new URL(req.url, `http://${req.headers.host}`);

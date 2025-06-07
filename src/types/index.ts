@@ -33,6 +33,11 @@ export interface Event {
     3: number;
     [key: string]: number;
   };
+  scoring?: {
+    win: number;
+    loss: number;
+    draw?: number;
+  };
   stationIds?: string[];
   createdAt: string;
 }
@@ -41,6 +46,7 @@ export interface Match {
   _type: 'match';
   id: string;
   eventId: string;
+  tournamentId: string;
   round: number;
   stationId?: string;
   teamA: string;
@@ -48,6 +54,10 @@ export interface Match {
   winner?: string;
   isComplete: boolean;
   mediaIds: string[];
+  finalScore?: {
+    a: number;
+    b: number;
+  };
   startTime?: string;
   endTime?: string;
   createdAt: string;
@@ -64,6 +74,9 @@ export interface ScoreSubmission {
     b: number;
   };
   status: 'PENDING' | 'CONFIRMED' | 'DISPUTED';
+  confirmedAt?: string;
+  disputedBy?: string;
+  disputedAt?: string;
   createdAt: string;
 }
 

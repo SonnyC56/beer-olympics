@@ -2,6 +2,8 @@ import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Trophy, Medal, Award } from 'lucide-react';
 import { trpc } from '@/utils/trpc';
+import { useTournamentUpdates } from '@/hooks/usePusher';
+import { useCallback } from 'react';
 
 export function LeaderboardPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -11,10 +13,24 @@ export function LeaderboardPage() {
     { enabled: !!slug }
   );
   
-  const { data: leaderboard = [], isLoading: leaderboardLoading } = trpc.leaderboard.list.useQuery(
+  const { data: leaderboard = [], isLoading: leaderboardLoading, refetch: refetchLeaderboard } = trpc.leaderboard.list.useQuery(
     { slug: slug! },
-    { enabled: !!slug }
+    { enabled: !!slug, refetchInterval: 30000 } // Refetch every 30 seconds as fallback
   );
+
+  // Real-time updates
+  const handleScoreUpdate = useCallback(() => {
+    refetchLeaderboard();
+  }, [refetchLeaderboard]);
+
+  const handleMatchComplete = useCallback(() => {
+    refetchLeaderboard();
+  }, [refetchLeaderboard]);
+
+  useTournamentUpdates(slug, {
+    onScoreUpdate: handleScoreUpdate,
+    onMatchComplete: handleMatchComplete,
+  });
 
   const getMedalIcon = (position: number) => {
     switch (position) {

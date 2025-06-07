@@ -1,6 +1,21 @@
 import { z } from 'zod';
 import { router, publicProcedure } from '../trpc';
-import { getCollection } from '../../services/couchbase';
+import { query } from '../../services/couchbase';
+import { TRPCError } from '@trpc/server';
+
+interface LeaderboardRow {
+  teamId: string;
+  teamName: string;
+  colorHex: string;
+  flagCode: string;
+  total: number;
+}
+
+interface TeamStatsRow {
+  eventName: string;
+  points: number;
+  entries: number;
+}
 
 export const leaderboardRouter = router({
   list: publicProcedure
@@ -8,36 +23,53 @@ export const leaderboardRouter = router({
       slug: z.string(),
     }))
     .query(async ({ input }) => {
-      const collection = await getCollection();
-      
-      const query = `
-        SELECT 
-          t.id as teamId,
-          t.name as teamName,
-          t.colorHex,
-          t.flagCode,
-          SUM(se.points) as total
-        FROM \`beer_olympics\`._default se
-        JOIN \`beer_olympics\`._default t ON KEY t FOR se
-        WHERE se._type = 'score_entry' 
-        AND se.tournamentId = $1
-        AND t._type = 'team'
-        GROUP BY t.id, t.name, t.colorHex, t.flagCode
-        ORDER BY total DESC
-      `;
-      
-      const result = await collection.cluster.query(query, {
-        parameters: [input.slug],
-      });
-      
-      return result.rows.map((row: any, index: number) => ({
-        position: index + 1,
-        teamId: row.teamId,
-        teamName: row.teamName,
-        colorHex: row.colorHex,
-        flagCode: row.flagCode,
-        totalPoints: row.total || 0,
-      }));
+      try {
+        // First get all teams for the tournament
+        const teamsResult = await query(
+          `SELECT id, name, colorHex, flagCode 
+           FROM \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default
+           WHERE _type = 'team' AND tournamentId = $1`,
+          { parameters: [input.slug] }
+        );
+        
+        // Then get score totals
+        const scoresResult = await query(
+          `SELECT teamId, SUM(points) as total
+           FROM \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default
+           WHERE _type = 'score_entry' AND tournamentId = $1
+           GROUP BY teamId`,
+          { parameters: [input.slug] }
+        );
+        
+        // Create a map of scores
+        const scoreMap = new Map<string, number>();
+        scoresResult.rows.forEach((row: any) => {
+          scoreMap.set(row.teamId, row.total || 0);
+        });
+        
+        // Combine teams with scores
+        const leaderboard = teamsResult.rows.map((team: any) => ({
+          teamId: team.id,
+          teamName: team.name,
+          colorHex: team.colorHex,
+          flagCode: team.flagCode,
+          totalPoints: scoreMap.get(team.id) || 0,
+        }));
+        
+        // Sort by points descending
+        leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
+        
+        // Add positions
+        return leaderboard.map((team, index) => ({
+          position: index + 1,
+          ...team,
+        }));
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch leaderboard',
+        });
+      }
     }),
 
   teamStats: publicProcedure
@@ -45,26 +77,58 @@ export const leaderboardRouter = router({
       teamId: z.string(),
     }))
     .query(async ({ input }) => {
-      const collection = await getCollection();
-      
-      const query = `
-        SELECT 
-          e.name as eventName,
-          SUM(se.points) as points,
-          COUNT(*) as entries
-        FROM \`beer_olympics\`._default se
-        JOIN \`beer_olympics\`._default e ON KEY e FOR se
-        WHERE se._type = 'score_entry' 
-        AND se.teamId = $1
-        AND e._type = 'event'
-        GROUP BY e.name
-        ORDER BY points DESC
-      `;
-      
-      const result = await collection.cluster.query(query, {
-        parameters: [input.teamId],
-      });
-      
-      return result.rows;
+      try {
+        const result = await query(
+          `SELECT e.name as eventName, se.eventId, SUM(se.points) as points, COUNT(*) as entries
+           FROM \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default se
+           JOIN \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default e 
+           ON META(e).id = CONCAT('event::', se.eventId)
+           WHERE se._type = 'score_entry' 
+           AND se.teamId = $1
+           AND e._type = 'event'
+           GROUP BY e.name, se.eventId
+           ORDER BY points DESC`,
+          { parameters: [input.teamId] }
+        );
+        
+        return result.rows as TeamStatsRow[];
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch team statistics',
+        });
+      }
+    }),
+
+  recentActivity: publicProcedure
+    .input(z.object({
+      tournamentId: z.string(),
+      limit: z.number().min(1).max(50).default(10),
+    }))
+    .query(async ({ input }) => {
+      try {
+        const result = await query(
+          `SELECT se.*, t.name as teamName, t.colorHex, e.name as eventName
+           FROM \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default se
+           JOIN \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default t 
+           ON META(t).id = CONCAT('team::', se.teamId)
+           JOIN \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default e 
+           ON META(e).id = CONCAT('event::', se.eventId)
+           WHERE se._type = 'score_entry' 
+           AND se.tournamentId = $1
+           AND t._type = 'team'
+           AND e._type = 'event'
+           ORDER BY se.createdAt DESC
+           LIMIT $2`,
+          { parameters: [input.tournamentId, input.limit] }
+        );
+        
+        return result.rows;
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch recent activity',
+        });
+      }
     }),
 });
