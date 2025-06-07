@@ -33,23 +33,21 @@ export function JoinPage() {
 
   const [isJoining, setIsJoining] = useState(false);
 
-  const { data: tournament, isLoading, error } = trpc.tournament.getBySlug.useQuery(
+  const { data: tournament, isLoading } = trpc.tournament.getBySlug.useQuery(
     { slug: slug! },
     { 
       enabled: !!slug,
-      retry: 1,
-      onError: (err) => {
-        console.error('Failed to load tournament:', err);
-        toast.error(`Failed to load tournament: ${err.message}`);
-      },
-      onSuccess: (data: any) => {
-        console.log('Tournament loaded:', data);
-      }
+      retry: 1
     }
   );
   
   // Log the current slug
   console.log('Current slug:', slug);
+  
+  // Log tournament data when loaded
+  if (tournament) {
+    console.log('Tournament loaded:', tournament);
+  }
 
   const joinTeamMutation = trpc.team.joinPublic.useMutation({
     onSuccess: () => {
