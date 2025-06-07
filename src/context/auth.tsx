@@ -35,15 +35,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async () => {
     try {
-      // TODO: Implement Google OAuth with Auth.js
-      // For now, mock sign in
-      const mockUser: User = {
-        id: 'user-' + Math.random().toString(36).substr(2, 9),
-        email: 'player@beerlympics.com',
-        name: 'Beer Player',
-      };
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      // Get OAuth URL from API
+      const response = await fetch('/api/auth/google');
+      const { url } = await response.json();
+      
+      // Redirect to OAuth provider (or mock for development)
+      window.location.href = url;
     } catch (error) {
       console.error('Sign in failed:', error);
       throw error;

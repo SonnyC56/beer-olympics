@@ -11,6 +11,8 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ControlRoomPage } from './pages/ControlRoomPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
 import { DisplayPage } from './pages/DisplayPage';
+import { AuthCallbackPage } from './pages/AuthCallbackPage';
+import { TestPage } from './pages/TestPage';
 
 function App() {
   return (
@@ -26,6 +28,8 @@ function App() {
                 <Route path="/control/:slug" element={<ControlRoomPage />} />
                 <Route path="/leaderboard/:slug" element={<LeaderboardPage />} />
                 <Route path="/display/:slug" element={<DisplayPage />} />
+                <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                <Route path="/test" element={<TestPage />} />
               </Routes>
               <Toaster theme="dark" position="top-center" />
             </div>

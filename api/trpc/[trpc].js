@@ -77,6 +77,7 @@ async function processProcedure(path, input, method) {
   console.log('Processing procedure:', path, 'with input:', input);
   
   if (path === 'tournament.getBySlug' && method === 'GET') {
+    // Always return test tournament for now
     if (input.slug === 'test-tournament') {
       return {
         data: {
@@ -92,16 +93,17 @@ async function processProcedure(path, input, method) {
       };
     }
     
+    // For demo purposes, create a mock tournament for any slug
     return {
-      error: {
-        message: 'Tournament not found',
-        code: -32004,
-        data: {
-          code: 'NOT_FOUND',
-          httpStatus: 404,
-          stack: 'TRPCError: Tournament not found',
-          path: 'tournament.getBySlug',
-        }
+      data: {
+        _type: 'tournament',
+        slug: input.slug,
+        name: `${input.slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Tournament`,
+        date: '2024-07-20',
+        ownerId: 'demo-user',
+        isOpen: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       }
     };
   }
