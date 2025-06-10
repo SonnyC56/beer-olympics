@@ -23,6 +23,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     try {
+      // For development without backend, use localStorage mock auth
+      if (import.meta.env.DEV) {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            setUser(JSON.parse(storedUser));
+          } catch {
+            setUser(null);
+            localStorage.removeItem('user');
+          }
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch(getApiUrl('/api/auth/me'), {
         credentials: 'include',
       });
@@ -62,6 +79,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (returnTo?: string) => {
     try {
+      // For development without backend, use mock auth
+      if (import.meta.env.DEV) {
+        const mockUser: User = {
+          id: '123',
+          email: 'demo@beerolympics.fun',
+          name: 'Demo User',
+          image: 'https://api.dicebear.com/7.x/fun-emoji/svg?seed=demo',
+        };
+        setUser(mockUser);
+        localStorage.setItem('user', JSON.stringify(mockUser));
+        
+        // Navigate to returnTo or dashboard
+        if (returnTo) {
+          window.location.href = returnTo;
+        }
+        return;
+      }
+
       const response = await fetch(getApiUrl('/api/auth/google'), {
         credentials: 'include',
       });

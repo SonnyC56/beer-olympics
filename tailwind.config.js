@@ -1,6 +1,5 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: ["class"],
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -8,16 +7,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        'beer-sage': '#f59e0b',
-        gray: {
-          950: '#030712',
-        },
+        primary: 'hsl(var(--color-primary))',
+        secondary: 'hsl(var(--color-secondary))',
+        tertiary: 'hsl(var(--color-tertiary))',
+        accent: 'hsl(var(--color-accent))',
+        success: 'hsl(var(--color-success))',
+        danger: 'hsl(var(--color-danger))',
+        'neutral-0': 'hsl(var(--color-neutral-0))',
+        'neutral-900': 'hsl(var(--color-neutral-900))',
       },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
+      fontFamily: {
+        party: ['Fredoka', 'Nunito', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Nunito', 'system-ui', '-apple-system', 'sans-serif'],
+      }
     },
   },
   plugins: [],

@@ -14,7 +14,7 @@ export const matchRouter = router({
       score: z.object({
         a: z.number().min(0),
         b: z.number().min(0),
-      }),
+      }).strict(),
     }))
     .mutation(async ({ input, ctx }) => {
       try {

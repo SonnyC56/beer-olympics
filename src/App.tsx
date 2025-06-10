@@ -1,8 +1,10 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/auth';
 import { Toaster } from 'sonner';
 import { trpc, trpcClient, queryClient } from './utils/trpc';
+import { AnimatePresence, motion } from 'framer-motion';
+import React from 'react';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -15,24 +17,77 @@ import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { TestPage } from './pages/TestPage';
 import { CreateTournamentPage } from './pages/CreateTournamentPage';
 
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    x: "-100vw",
+    scale: 0.8
+  },
+  in: {
+    opacity: 1,
+    x: 0,
+    scale: 1
+  },
+  out: {
+    opacity: 0,
+    x: "100vw",
+    scale: 1.2
+  }
+};
+
+const pageTransition = {
+  type: "tween",
+  ease: "anticipate",
+  duration: 0.5
+};
+
+const PageLayout = ({ children }: { children: React.ReactNode }) => (
+  <motion.div
+    initial="initial"
+    animate="in"
+    exit="out"
+    variants={pageVariants}
+    transition={pageTransition}
+  >
+    {children}
+  </motion.div>
+);
+
+const wrapWithLayout = (Component: React.ComponentType) => (
+  <PageLayout>
+    <Component />
+  </PageLayout>
+);
+
+
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={wrapWithLayout(HomePage)} />
+        <Route path="/join/:slug" element={wrapWithLayout(JoinPage)} />
+        <Route path="/dashboard/:slug" element={wrapWithLayout(DashboardPage)} />
+        <Route path="/control/:slug" element={wrapWithLayout(ControlRoomPage)} />
+        <Route path="/leaderboard/:slug" element={wrapWithLayout(LeaderboardPage)} />
+        <Route path="/display/:slug" element={wrapWithLayout(DisplayPage)} />
+        <Route path="/auth/callback" element={wrapWithLayout(AuthCallbackPage)} />
+        <Route path="/test" element={wrapWithLayout(TestPage)} />
+        <Route path="/create" element={wrapWithLayout(CreateTournamentPage)} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 function App() {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <Router>
-            <div className="min-h-screen bg-gray-900 text-gray-100">
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/join/:slug" element={<JoinPage />} />
-                <Route path="/dashboard/:slug" element={<DashboardPage />} />
-                <Route path="/control/:slug" element={<ControlRoomPage />} />
-                <Route path="/leaderboard/:slug" element={<LeaderboardPage />} />
-                <Route path="/display/:slug" element={<DisplayPage />} />
-                <Route path="/auth/callback" element={<AuthCallbackPage />} />
-                <Route path="/test" element={<TestPage />} />
-                <Route path="/create" element={<CreateTournamentPage />} />
-              </Routes>
+            <div className="min-h-screen">
+              <AnimatedRoutes />
               <Toaster theme="dark" position="top-center" />
             </div>
           </Router>

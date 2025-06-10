@@ -1,13 +1,108 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700;800;900&display=swap');
 
 @layer base {
   :root {
-    --radius: 0.5rem;
+    --color-primary: 330 89% 78%; /* Pastel Pink */
+    --color-secondary: 199 89% 78%; /* Pastel Blue */
+    --color-tertiary: 58 89% 78%; /* Pastel Yellow */
+    --color-accent: 28 89% 78%; /* Pastel Orange */
+    --color-success: 145 63% 78%; /* Pastel Green */
+    --color-danger: 0 89% 78%; /* Pastel Red */
+    --color-neutral-0: 40 33% 97%; /* Off-white */
+    --color-neutral-900: 223 11% 35%; /* Dark Grey */
+
+    --radius: 1rem;
+    --shadow-color: 223deg 11% 25%;
+    --shadow-strength: 0.1;
   }
 }
 
+/* Fun shadow utilities */
+@utility shadow-party {
+  box-shadow: 
+    0 4px 8px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 0.05)),
+    0 8px 16px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 0.1)),
+    0 16px 32px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 0.15));
+}
+
+@utility shadow-glow {
+  box-shadow: 
+    0 0 20px rgba(255, 20, 147, 0.3),
+    0 0 40px rgba(0, 255, 255, 0.2),
+    0 0 60px rgba(255, 215, 0, 0.1);
+}
+
+/* Bouncy animations */
+@keyframes bounce-in {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.1); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes wiggle {
+  0%, 7% { transform: rotateZ(0); }
+  15% { transform: rotateZ(-3deg); }
+  20% { transform: rotateZ(2deg); }
+  25% { transform: rotateZ(-2deg); }
+  30% { transform: rotateZ(1deg); }
+  35% { transform: rotateZ(-1deg); }
+  40%, 100% { transform: rotateZ(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(255, 20, 147, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(255, 20, 147, 0.6), 0 0 60px rgba(0, 255, 255, 0.4); }
+}
+
+@utility animate-bounce-in { animation: bounce-in 0.6s ease-out; }
+@utility animate-wiggle { animation: wiggle 2s ease-in-out infinite; }
+@utility animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+
+/* Typography */
 body {
-  @apply bg-gray-900 text-gray-100;
+  font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+  @apply bg-gradient-to-br from-secondary to-accent text-neutral-900;
+  min-height: 100vh;
+}
+
+.font-party {
+  font-family: 'Fredoka', 'Nunito', system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+}
+
+.text-shadow {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Button styles */
+.btn-party {
+  @apply font-party text-white font-bold py-4 px-8 rounded-2xl transform transition-all duration-150 ease-in-out;
+  @apply shadow-party hover:scale-105 active:scale-95;
+  @apply bg-gradient-sunset;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.btn-party:hover {
+  @apply shadow-glow animate-pulse-glow;
+}
+
+/* Card styles */
+.card-party {
+  @apply bg-neutral-0/80 backdrop-blur-sm rounded-3xl p-6 shadow-party;
+  @apply transform transition-all duration-300 ease-in-out;
+  @apply hover:scale-[1.02] hover:shadow-glow;
+}
+
+/* Input styles */
+.input-party {
+  @apply bg-white/90 border-4 border-primary-pink rounded-2xl p-4 font-party;
+  @apply focus:border-primary-cyan focus:ring-4 focus:ring-primary-cyan/30;
+  @apply transition-all duration-200;
+}
+
+/* Rounded everything */
+* {
+  @apply [border-radius:inherit];
 }

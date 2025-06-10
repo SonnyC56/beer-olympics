@@ -1,5 +1,9 @@
 import Pusher from 'pusher';
 import PusherClient from 'pusher-js';
+import type { PusherEvents } from '../types/pusher';
+
+// Re-export the PusherEvents type so it can be imported from this file
+export type { PusherEvents } from '../types/pusher';
 
 // Server-side Pusher instance
 let pusherServer: Pusher | null = null;
@@ -22,8 +26,9 @@ let pusherClient: PusherClient | null = null;
 
 export function getPusherClient() {
   if (!pusherClient && typeof window !== 'undefined') {
-    const key = import.meta.env.VITE_PUSHER_KEY || process.env.PUSHER_KEY;
-    const cluster = import.meta.env.VITE_PUSHER_CLUSTER || process.env.PUSHER_CLUSTER || 'us2';
+    // For client-side, use Vite's import.meta.env
+    const key = import.meta.env.VITE_PUSHER_KEY as string | undefined;
+    const cluster = (import.meta.env.VITE_PUSHER_CLUSTER as string | undefined) || 'us2';
     
     if (key) {
       pusherClient = new PusherClient(key, {
@@ -35,33 +40,6 @@ export function getPusherClient() {
   return pusherClient;
 }
 
-// Event types for type safety
-export interface PusherEvents {
-  'score-update': {
-    tournamentId: string;
-    matchId: string;
-    teamId: string;
-    points: number;
-  };
-  'match-complete': {
-    tournamentId: string;
-    matchId: string;
-    winner: string;
-  };
-  'team-joined': {
-    tournamentId: string;
-    team: {
-      id: string;
-      name: string;
-      colorHex: string;
-      flagCode: string;
-    };
-  };
-  'tournament-status': {
-    tournamentId: string;
-    isOpen: boolean;
-  };
-}
 
 // Helper to trigger events from server
 export async function triggerEvent<K extends keyof PusherEvents>(
