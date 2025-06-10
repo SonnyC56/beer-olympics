@@ -5,6 +5,9 @@ This document contains essential information for Claude to effectively work on t
 ## Project Overview
 A phone-first PWA tournament platform for backyard Olympics with real-time brackets, self-reported scores, bonus challenges, media uploads, and auto-generated highlight reels.
 
+## Current State
+The project has a solid foundation with a working frontend and a partially implemented backend. The UI has been recently updated with a new pastel color palette, improved typography, and engaging animations. However, we are currently debugging an issue with the `tournament.create` tRPC endpoint, which is returning a 404 error in the local development environment.
+
 ## Tech Stack
 - **Frontend**: Vite + React + TypeScript
 - **Styling**: Tailwind CSS + shadcn/ui + Framer Motion
@@ -42,7 +45,6 @@ src/
 ├── lib/          # Utilities (cn function, etc.)
 ├── pages/        # Page components
 ├── services/     # Business logic and external services
-├── styles/       # Additional styles
 └── types/        # TypeScript type definitions
 ```
 
@@ -74,7 +76,7 @@ src/
 - `CLOUDINARY_*` - Image upload credentials
 
 ## Design Principles
-- **Dark Mode First**: Beer events run into the night
+- **Pastel & Playful**: A soft, inviting color palette with engaging animations.
 - **Mobile First**: Most users will be on phones
 - **Real-time**: Everything updates instantly
 - **Minimal Friction**: Easy sign-up, quick score entry
@@ -89,13 +91,11 @@ src/
 1. **Tailwind not working**: Ensure postcss.config.js and tailwind.config.js are properly configured
 2. **Type errors**: Run `npm run typecheck` to catch TypeScript issues
 3. **Auth issues**: Check .env file has correct AUTH_* variables
+4. **tRPC 404 errors**: Check `vite.config.ts` proxy and `vercel.json` rewrites.
 
-## Next Steps After Basic Setup
-1. Create Couchbase connection service
-2. Implement authentication flow with Google
-3. Set up tRPC routers for tournament operations
-4. Build the public join flow (`/join/:slug`)
-5. Create dashboard and scoring interfaces
-6. Implement real-time WebSocket updates
-7. Add media upload capabilities
-8. Build highlight reel generation system
+## Next Steps
+1.  **Resolve the `tournament.create` 404 error.** This is our highest priority. We need to determine if the issue is with the Vite proxy, the Vercel routing, or the tRPC handler itself.
+2.  **Complete the backend implementation.** This includes building out the remaining tRPC routers and services for teams, matches, and scoring.
+3.  **Implement real-time updates with WebSockets.** This is a critical feature for creating a live, engaging experience.
+4.  **Build out the remaining pages and features.** This includes the tournament dashboard, scoring interfaces, and media upload capabilities.
+5.  **Add end-to-end tests with Playwright.** This will help us ensure the application is working correctly from the user's perspective.

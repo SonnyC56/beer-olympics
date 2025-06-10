@@ -207,12 +207,8 @@ export function ControlRoomPage() {
                 <Button
                   onClick={handleToggleRegistration}
                   disabled={isClosing}
-                  variant={tournament.isOpen ? 'destructive' : 'default'}
-                  className={`w-full h-12 font-semibold transition-all duration-200 ${
-                    tournament.isOpen 
-                      ? 'bg-red-600 hover:bg-red-700 shadow-lg hover:shadow-red-500/25' 
-                      : 'bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-green-500/25'
-                  }`}
+                  variant={tournament.isOpen ? 'danger' : 'success'}
+                  className="w-full h-12 font-semibold"
                 >
                   {tournament.isOpen ? (
                     <>
