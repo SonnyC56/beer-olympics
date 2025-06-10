@@ -1,7 +1,7 @@
 import { verifyGoogleToken, generateJWT } from '../../src/services/auth.js';
 import { serialize } from 'cookie';
 import { applySecurityHeaders, applyCorsHeaders } from '../../src/utils/middleware.js';
-import { upsertDocument } from '../../src/services/couchbase.js';
+import { upsertDocument, getDocument } from '../../src/services/couchbase.js';
 
 export default async function handler(req, res) {
   // Apply security headers
@@ -37,21 +37,52 @@ export default async function handler(req, res) {
     
     // Store/update user in Couchbase
     try {
-      await upsertDocument(`user::${user.id}`, {
+      // Create or update user profile with proper labeling
+      const currentTime = new Date().toISOString();
+      const userDoc = {
+        _type: 'user',                    // Document type label
         ...user,
-        lastLogin: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      });
+        lastLogin: currentTime,
+        updatedAt: currentTime,
+        // Add default fields for new users
+        preferences: {
+          notifications: true,
+          theme: 'light'
+        },
+        stats: {
+          tournamentsJoined: 0,
+          tournamentsWon: 0,
+          totalMatches: 0
+        }
+      };
       
-      // Store login event
+      // Check if user exists to preserve createdAt
+      try {
+        const existingUser = await getDocument(`user::${user.id}`);
+        if (existingUser) {
+          // Preserve existing data
+          userDoc.createdAt = existingUser.createdAt;
+          userDoc.preferences = existingUser.preferences || userDoc.preferences;
+          userDoc.stats = existingUser.stats || userDoc.stats;
+        }
+      } catch (error) {
+        // User doesn't exist, set createdAt
+        userDoc.createdAt = currentTime;
+      }
+      
+      await upsertDocument(`user::${user.id}`, userDoc);
+      
+      // Store login event with proper labeling
       const loginEventId = `login::${user.id}::${Date.now()}`;
       await upsertDocument(loginEventId, {
+        _type: 'login_event',             // Document type label
         userId: user.id,
         email: user.email,
         name: user.name,
-        timestamp: new Date().toISOString(),
+        timestamp: currentTime,
         userAgent: req.headers['user-agent'],
-        ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress
+        ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        successful: true
       });
     } catch (dbError) {
       console.error('Failed to store user login in database:', dbError);

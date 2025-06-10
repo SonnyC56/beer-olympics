@@ -27,6 +27,7 @@
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
     "test:couchbase": "node scripts/test-couchbase.js",
     "test:user": "node scripts/test-user-creation.js",
+    "view:labels": "node scripts/view-labeled-documents.js",
     "diagnose:couchbase": "node scripts/diagnose-couchbase.js",
     "init:couchbase": "node scripts/init-couchbase.js",
     "reset:couchbase": "node scripts/reset-couchbase.js"

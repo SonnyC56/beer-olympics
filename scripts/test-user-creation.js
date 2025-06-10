@@ -34,6 +34,7 @@ async function testUserCreation() {
     console.log('\n👤 Creating fake user...');
     const userId = 'google-fake-user-' + Date.now();
     const fakeUser = {
+      _type: 'user',                    // Document type label
       id: userId,
       email: 'fake.user@example.com',
       name: 'Fake Test User',
@@ -130,6 +131,7 @@ async function testUserCreation() {
     console.log('\n📝 Creating login event...');
     const loginEventId = `login::${userId}::${Date.now()}`;
     const loginEvent = {
+      _type: 'login_event',             // Document type label
       userId: userId,
       email: fakeUser.email,
       name: fakeUser.name,
