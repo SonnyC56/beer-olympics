@@ -18,7 +18,9 @@ export default async function handler(req, res) {
     console.log('Auth me check:', {
       hasAuthSecret: !!process.env.AUTH_SECRET,
       hasCookie: !!req.headers.cookie,
-      hasAuth: !!req.headers.authorization
+      hasAuth: !!req.headers.authorization,
+      userAgent: req.headers['user-agent'],
+      origin: req.headers.origin
     });
     
     // Get token from cookie or Authorization header
@@ -44,7 +46,15 @@ export default async function handler(req, res) {
     
     return res.status(200).json({ user });
   } catch (error) {
-    console.error('Auth verification error:', error);
-    return res.status(401).json({ error: 'Authentication failed' });
+    console.error('Auth verification error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      hasAuthSecret: !!process.env.AUTH_SECRET
+    });
+    return res.status(500).json({ 
+      error: 'Authentication service error',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 }
