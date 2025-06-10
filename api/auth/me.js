@@ -15,6 +15,12 @@ export default async function handler(req, res) {
   }
   
   try {
+    console.log('Auth me check:', {
+      hasAuthSecret: !!process.env.AUTH_SECRET,
+      hasCookie: !!req.headers.cookie,
+      hasAuth: !!req.headers.authorization
+    });
+    
     // Get token from cookie or Authorization header
     let token = parseAuthCookie(req.headers.cookie);
     

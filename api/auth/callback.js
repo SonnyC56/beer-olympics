@@ -1,6 +1,7 @@
 import { verifyGoogleToken, generateJWT } from '../../src/services/auth.js';
 import { serialize } from 'cookie';
 import { applySecurityHeaders, applyCorsHeaders } from '../../src/utils/middleware.js';
+import { upsertDocument } from '../../src/services/couchbase.js';
 
 export default async function handler(req, res) {
   // Apply security headers
@@ -25,6 +26,37 @@ export default async function handler(req, res) {
   try {
     // Verify the Google token and get user info
     const user = await verifyGoogleToken(code);
+    
+    // Log successful login
+    console.log('🎉 User logged in:', {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Store/update user in Couchbase
+    try {
+      await upsertDocument(`user::${user.id}`, {
+        ...user,
+        lastLogin: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      
+      // Store login event
+      const loginEventId = `login::${user.id}::${Date.now()}`;
+      await upsertDocument(loginEventId, {
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        timestamp: new Date().toISOString(),
+        userAgent: req.headers['user-agent'],
+        ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress
+      });
+    } catch (dbError) {
+      console.error('Failed to store user login in database:', dbError);
+      // Continue with login even if DB storage fails
+    }
     
     // Generate JWT token
     const token = generateJWT(user);

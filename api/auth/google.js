@@ -11,13 +11,21 @@ export default async function handler(req, res) {
   }
   
   try {
+    console.log('Auth env check:', {
+      hasGoogleId: !!process.env.AUTH_GOOGLE_ID,
+      hasGoogleSecret: !!process.env.AUTH_GOOGLE_SECRET,
+      hasAuthSecret: !!process.env.AUTH_SECRET,
+      authUrl: process.env.AUTH_URL,
+      nodeEnv: process.env.NODE_ENV
+    });
+    
     // If we're in development without Google OAuth configured, use mock auth
     if (!process.env.AUTH_GOOGLE_ID || !process.env.AUTH_GOOGLE_SECRET) {
       const redirectUrl = new URL(process.env.AUTH_URL || 'http://localhost:5173');
       redirectUrl.pathname = '/auth/callback';
       redirectUrl.searchParams.set('token', 'mock-token-' + Date.now());
       redirectUrl.searchParams.set('user', JSON.stringify({
-        id: 'google-user-' + Math.random().toString(36).substr(2, 9),
+        id: 'google-user-' + Math.random().toString(36).substring(2, 11),
         email: 'player@gmail.com',
         name: 'Google User',
         image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + Date.now()
