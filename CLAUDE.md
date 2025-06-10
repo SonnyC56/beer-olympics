@@ -86,6 +86,8 @@ src/
 - Unit tests with Vitest
 - Component tests with React Testing Library
 - E2E tests with Playwright (to be added)
+- build first before commiting always - if there are errors fix them and try again before comitting
+- never use the any type
 
 ## Common Issues & Solutions
 1. **Tailwind not working**: Ensure postcss.config.js and tailwind.config.js are properly configured
