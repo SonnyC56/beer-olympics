@@ -1,9 +1,10 @@
-import { verifyGoogleToken, generateJWT } from '../../src/services/auth.js';
+import { verifyGoogleToken, generateJWT } from '../../src/services/auth';
 import { serialize } from 'cookie';
-import { applySecurityHeaders, applyCorsHeaders } from '../../src/utils/middleware.js';
-import { upsertDocument, getDocument } from '../../src/services/couchbase.js';
+import { applySecurityHeaders, applyCorsHeaders } from '../../src/utils/middleware';
+import { upsertDocument, getDocument } from '../../src/services/couchbase';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-export default async function handler(req, res) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Apply security headers
   applySecurityHeaders(res);
   applyCorsHeaders(res, req.headers.origin);
@@ -13,19 +14,20 @@ export default async function handler(req, res) {
   }
   
   const { code, error } = req.query;
+  const codeParam = Array.isArray(code) ? code[0] : code;
   
   if (error) {
     // Redirect to home with error
     return res.redirect(302, `${process.env.VITE_APP_URL}/?auth_error=${error}`);
   }
   
-  if (!code) {
+  if (!codeParam) {
     return res.status(400).json({ error: 'Missing authorization code' });
   }
   
   try {
     // Verify the Google token and get user info
-    const user = await verifyGoogleToken(code);
+    const user = await verifyGoogleToken(codeParam);
     
     // Log successful login
     console.log('🎉 User logged in:', {
@@ -39,7 +41,7 @@ export default async function handler(req, res) {
     try {
       // Create or update user profile with proper labeling
       const currentTime = new Date().toISOString();
-      const userDoc = {
+      const userDoc: any = {
         _type: 'user',                    // Document type label
         ...user,
         lastLogin: currentTime,
@@ -61,9 +63,9 @@ export default async function handler(req, res) {
         const existingUser = await getDocument(`user::${user.id}`);
         if (existingUser) {
           // Preserve existing data
-          userDoc.createdAt = existingUser.createdAt;
-          userDoc.preferences = existingUser.preferences || userDoc.preferences;
-          userDoc.stats = existingUser.stats || userDoc.stats;
+          userDoc.createdAt = (existingUser as any).createdAt;
+          userDoc.preferences = (existingUser as any).preferences || userDoc.preferences;
+          userDoc.stats = (existingUser as any).stats || userDoc.stats;
         }
       } catch (error) {
         // User doesn't exist, set createdAt

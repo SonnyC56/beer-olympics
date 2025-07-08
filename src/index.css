@@ -1,108 +1,284 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700;800;900&family=Bungee:wght@400&display=swap');
 
 @layer base {
   :root {
-    --color-primary: 330 89% 78%; /* Pastel Pink */
-    --color-secondary: 199 89% 78%; /* Pastel Blue */
-    --color-tertiary: 58 89% 78%; /* Pastel Yellow */
-    --color-accent: 28 89% 78%; /* Pastel Orange */
-    --color-success: 145 63% 78%; /* Pastel Green */
-    --color-danger: 0 89% 78%; /* Pastel Red */
-    --color-neutral-0: 40 33% 97%; /* Off-white */
-    --color-neutral-900: 223 11% 35%; /* Dark Grey */
+    /* Enhanced Beer Olympics Color Palette */
+    --color-primary: 330 89% 78%; /* Party Pink */
+    --color-secondary: 199 89% 78%; /* Party Blue */
+    --color-tertiary: 58 89% 78%; /* Party Yellow */
+    --color-accent: 28 89% 78%; /* Party Orange */
+    --color-success: 145 63% 78%; /* Victory Green */
+    --color-danger: 0 89% 78%; /* Warning Red */
+    --color-neutral-0: 40 33% 97%; /* Cream White */
+    --color-neutral-900: 223 11% 35%; /* Deep Charcoal */
 
-    --radius: 1rem;
+    /* Beer themed colors */
+    --color-beer-amber: 38 92% 50%; /* Rich Amber */
+    --color-beer-gold: 45 93% 47%; /* Golden Beer */
+    --color-beer-foam: 48 100% 96%; /* Foam White */
+    --color-beer-dark: 30 100% 29%; /* Dark Beer */
+
+    /* Party glow colors */
+    --color-glow-pink: 330 89% 68%;
+    --color-glow-cyan: 199 89% 68%;
+    --color-glow-yellow: 58 89% 68%;
+
+    --radius: 1.5rem;
     --shadow-color: 223deg 11% 25%;
-    --shadow-strength: 0.1;
+    --shadow-strength: 0.15;
+    --party-glow: 0 0 30px;
   }
 }
 
-/* Fun shadow utilities */
-@utility shadow-party {
-  box-shadow: 
-    0 4px 8px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 0.05)),
-    0 8px 16px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 0.1)),
-    0 16px 32px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 0.15));
+/* Spectacular Shadow Utilities */
+@layer utilities {
+  .shadow-party {
+    box-shadow: 
+      0 4px 8px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 0.05)),
+      0 8px 16px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 0.1)),
+      0 16px 32px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 0.15));
+  }
+
+  .shadow-glow {
+    box-shadow: 
+      0 0 20px rgba(255, 107, 107, 0.4),
+      0 0 40px rgba(78, 205, 196, 0.3),
+      0 0 60px rgba(69, 183, 209, 0.2);
+  }
+
+  .shadow-beer {
+    box-shadow: 
+      0 0 25px rgba(245, 158, 11, 0.5),
+      0 0 50px rgba(251, 191, 36, 0.3),
+      0 0 75px rgba(252, 211, 77, 0.2);
+  }
+
+  .shadow-victory {
+    box-shadow: 
+      0 0 30px rgba(16, 185, 129, 0.6),
+      0 0 60px rgba(52, 211, 153, 0.4),
+      0 0 90px rgba(110, 231, 183, 0.2);
+  }
 }
 
-@utility shadow-glow {
-  box-shadow: 
-    0 0 20px rgba(255, 20, 147, 0.3),
-    0 0 40px rgba(0, 255, 255, 0.2),
-    0 0 60px rgba(255, 215, 0, 0.1);
+/* 🎉 SPECTACULAR ANIMATIONS! 🎉 */
+@layer utilities {
+  .animate-bounce-in { animation: bounce-in 0.6s ease-out; }
+  .animate-wiggle { animation: wiggle 2s ease-in-out infinite; }
+  .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+  .animate-party-float { animation: party-float 3s ease-in-out infinite; }
+  .animate-beer-foam { animation: beer-foam 4s ease-in-out infinite; }
+  .animate-confetti { animation: confetti 0.8s ease-out; }
 }
 
-/* Bouncy animations */
 @keyframes bounce-in {
-  0% { transform: scale(0.3); opacity: 0; }
-  50% { transform: scale(1.1); }
-  70% { transform: scale(0.9); }
-  100% { transform: scale(1); opacity: 1; }
+  0% { transform: scale(0.3) rotate(-180deg); opacity: 0; }
+  50% { transform: scale(1.1) rotate(10deg); }
+  70% { transform: scale(0.9) rotate(-5deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
 @keyframes wiggle {
   0%, 7% { transform: rotateZ(0); }
-  15% { transform: rotateZ(-3deg); }
-  20% { transform: rotateZ(2deg); }
-  25% { transform: rotateZ(-2deg); }
-  30% { transform: rotateZ(1deg); }
-  35% { transform: rotateZ(-1deg); }
-  40%, 100% { transform: rotateZ(0); }
+  15% { transform: rotateZ(-5deg) scale(1.05); }
+  20% { transform: rotateZ(3deg) scale(1.02); }
+  25% { transform: rotateZ(-3deg) scale(1.05); }
+  30% { transform: rotateZ(2deg) scale(1.02); }
+  35% { transform: rotateZ(-1deg) scale(1.01); }
+  40%, 100% { transform: rotateZ(0) scale(1); }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(255, 20, 147, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(255, 20, 147, 0.6), 0 0 60px rgba(0, 255, 255, 0.4); }
+  0%, 100% { 
+    box-shadow: 
+      0 0 20px rgba(255, 107, 107, 0.4),
+      0 0 40px rgba(78, 205, 196, 0.2);
+  }
+  50% { 
+    box-shadow: 
+      0 0 40px rgba(255, 107, 107, 0.8),
+      0 0 80px rgba(78, 205, 196, 0.6),
+      0 0 120px rgba(69, 183, 209, 0.4);
+  }
 }
 
-@utility animate-bounce-in { animation: bounce-in 0.6s ease-out; }
-@utility animate-wiggle { animation: wiggle 2s ease-in-out infinite; }
-@utility animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+@keyframes party-float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  25% { transform: translateY(-10px) rotate(2deg); }
+  50% { transform: translateY(-20px) rotate(0deg); }
+  75% { transform: translateY(-10px) rotate(-2deg); }
+}
 
-/* Typography */
+@keyframes beer-foam {
+  0%, 100% { transform: translateY(0px) scale(1); opacity: 0.8; }
+  25% { transform: translateY(-5px) scale(1.05); opacity: 1; }
+  50% { transform: translateY(-10px) scale(1.1); opacity: 0.9; }
+  75% { transform: translateY(-5px) scale(1.05); opacity: 1; }
+}
+
+@keyframes confetti {
+  0% { 
+    transform: scale(0) rotate(0deg); 
+    opacity: 0; 
+  }
+  50% { 
+    transform: scale(1.2) rotate(180deg); 
+    opacity: 1; 
+  }
+  100% { 
+    transform: scale(1) rotate(360deg); 
+    opacity: 1; 
+  }
+}
+
+/* 🎨 MAGNIFICENT TYPOGRAPHY & BASE STYLES 🎨 */
 body {
   font-family: 'Nunito', system-ui, -apple-system, sans-serif;
-  @apply bg-gradient-to-br from-secondary to-accent text-neutral-900;
+  background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
+  @apply text-neutral-900;
   min-height: 100vh;
+  background-attachment: fixed;
 }
 
 .font-party {
   font-family: 'Fredoka', 'Nunito', system-ui, -apple-system, sans-serif;
   font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.font-heading {
+  font-family: 'Fredoka', 'Nunito', system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.font-beer {
+  font-family: 'Bungee', 'Fredoka', sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .text-shadow {
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* Button styles */
+.text-shadow-party {
+  text-shadow: 
+    2px 2px 4px rgba(255, 107, 107, 0.3),
+    -1px -1px 2px rgba(78, 205, 196, 0.3);
+}
+
+.text-glow {
+  text-shadow: 
+    0 0 10px rgba(255, 107, 107, 0.8),
+    0 0 20px rgba(78, 205, 196, 0.6),
+    0 0 30px rgba(69, 183, 209, 0.4);
+}
+
+/* 🚀 SPECTACULAR COMPONENT STYLES 🚀 */
+
+/* Button Styles */
 .btn-party {
-  @apply font-party text-white font-bold py-4 px-8 rounded-2xl transform transition-all duration-150 ease-in-out;
+  font-family: 'Fredoka', 'Nunito', system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+  @apply text-white font-bold py-4 px-8 rounded-2xl transform transition-all duration-200 ease-in-out;
   @apply shadow-party hover:scale-105 active:scale-95;
   @apply bg-gradient-sunset;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .btn-party:hover {
   @apply shadow-glow animate-pulse-glow;
 }
 
-/* Card styles */
+.btn-beer {
+  @apply font-beer text-beer-dark font-bold py-4 px-8 rounded-2xl transform transition-all duration-200 ease-in-out;
+  @apply shadow-beer hover:scale-105 active:scale-95;
+  @apply bg-gradient-beer border-2 border-beer-amber;
+  text-shadow: 1px 1px 2px rgba(146, 64, 14, 0.3);
+}
+
+.btn-victory {
+  font-family: 'Fredoka', 'Nunito', system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+  @apply text-white font-bold py-4 px-8 rounded-2xl transform transition-all duration-200 ease-in-out;
+  @apply shadow-victory hover:scale-105 active:scale-95;
+  @apply bg-gradient-victory;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Card Styles */
 .card-party {
-  @apply bg-neutral-0/80 backdrop-blur-sm rounded-3xl p-6 shadow-party;
+  @apply bg-neutral-0/85 backdrop-blur-md rounded-3xl p-6 shadow-party;
   @apply transform transition-all duration-300 ease-in-out;
-  @apply hover:scale-[1.02] hover:shadow-glow;
+  @apply hover:scale-[1.02] hover:shadow-glow border border-white/20;
 }
 
-/* Input styles */
+.card-beer {
+  @apply bg-beer-foam/90 backdrop-blur-md rounded-3xl p-6 shadow-beer;
+  @apply transform transition-all duration-300 ease-in-out;
+  @apply hover:scale-[1.02] hover:shadow-beer border-2 border-beer-gold/30;
+}
+
+.card-victory {
+  @apply bg-neutral-0/85 backdrop-blur-md rounded-3xl p-6 shadow-victory;
+  @apply transform transition-all duration-300 ease-in-out;
+  @apply hover:scale-[1.02] hover:shadow-victory border-2 border-party-green/30;
+}
+
+/* Input Styles */
 .input-party {
-  @apply bg-white/90 border-4 border-primary-pink rounded-2xl p-4 font-party;
-  @apply focus:border-primary-cyan focus:ring-4 focus:ring-primary-cyan/30;
-  @apply transition-all duration-200;
+  font-family: 'Fredoka', 'Nunito', system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+  @apply bg-white/95 border-3 border-party-pink rounded-2xl p-4;
+  @apply focus:border-party-cyan focus:ring-4 focus:ring-party-cyan/30;
+  @apply transition-all duration-200 placeholder-neutral-900/50;
+  @apply shadow-md hover:shadow-glow;
 }
 
-/* Rounded everything */
-* {
-  @apply [border-radius:inherit];
+.input-beer {
+  font-family: 'Fredoka', 'Nunito', system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+  @apply bg-beer-foam/95 border-3 border-beer-amber rounded-2xl p-4;
+  @apply focus:border-beer-gold focus:ring-4 focus:ring-beer-gold/30;
+  @apply transition-all duration-200 placeholder-beer-dark/60;
+}
+
+/* Special Effects */
+.glass-effect {
+  @apply backdrop-blur-lg bg-white/10 border border-white/20;
+  backdrop-filter: blur(20px);
+}
+
+.party-border {
+  background: linear-gradient(45deg, 
+    #FF6B6B 0%, 
+    #4ECDC4 25%, 
+    #45B7D1 50%, 
+    #96CEB4 75%, 
+    #FECA57 100%);
+  background-size: 400% 400%;
+  animation: gradient-shift 4s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .btn-party,
+  .btn-beer,
+  .btn-victory {
+    @apply py-3 px-6 text-sm;
+  }
+  
+  .card-party,
+  .card-beer,
+  .card-victory {
+    @apply p-4 rounded-2xl;
+  }
 }

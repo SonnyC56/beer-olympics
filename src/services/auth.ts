@@ -2,10 +2,16 @@ import { OAuth2Client } from 'google-auth-library';
 import jwt from 'jsonwebtoken';
 import type { User } from '../types';
 
+// Build the redirect URL properly
+const buildRedirectURL = () => {
+  const baseUrl = process.env.AUTH_URL || 'http://localhost:5173';
+  return `${baseUrl}/auth/callback`;
+};
+
 const client = new OAuth2Client(
   process.env.AUTH_GOOGLE_ID,
   process.env.AUTH_GOOGLE_SECRET,
-  process.env.AUTH_URL + '/auth/callback'
+  buildRedirectURL()
 );
 
 export interface AuthSession {
@@ -15,12 +21,26 @@ export interface AuthSession {
 }
 
 export async function generateAuthUrl(): Promise<string> {
-  const url = client.generateAuthUrl({
-    access_type: 'offline',
-    scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email'],
-    prompt: 'consent',
-  });
-  return url;
+  try {
+    console.log('Generating auth URL with:', {
+      clientId: process.env.AUTH_GOOGLE_ID ? 'SET' : 'NOT SET',
+      clientSecret: process.env.AUTH_GOOGLE_SECRET ? 'SET' : 'NOT SET',
+      redirectUri: buildRedirectURL(),
+      authUrl: process.env.AUTH_URL
+    });
+    
+    const url = client.generateAuthUrl({
+      access_type: 'offline',
+      scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email'],
+      prompt: 'consent',
+    });
+    
+    console.log('Generated OAuth URL:', url);
+    return url;
+  } catch (error) {
+    console.error('Error generating auth URL:', error);
+    throw new Error(`Failed to generate OAuth URL: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function verifyGoogleToken(code: string): Promise<User> {

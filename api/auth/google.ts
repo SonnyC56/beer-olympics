@@ -1,7 +1,8 @@
-import { generateAuthUrl } from '../../src/services/auth.js';
-import { applySecurityHeaders, applyCorsHeaders } from '../../src/utils/middleware.js';
+import { generateAuthUrl } from '../../src/services/auth';
+import { applySecurityHeaders, applyCorsHeaders } from '../../src/utils/middleware';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-export default async function handler(req, res) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Apply security headers
   applySecurityHeaders(res);
   applyCorsHeaders(res, req.headers.origin);

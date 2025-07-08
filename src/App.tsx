@@ -16,6 +16,7 @@ import { DisplayPage } from './pages/DisplayPage';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { TestPage } from './pages/TestPage';
 import { CreateTournamentPage } from './pages/CreateTournamentPage';
+import StyleDemoPage from './pages/StyleDemoPage';
 
 const pageVariants = {
   initial: {
@@ -75,6 +76,7 @@ function AnimatedRoutes() {
         <Route path="/auth/callback" element={wrapWithLayout(AuthCallbackPage)} />
         <Route path="/test" element={wrapWithLayout(TestPage)} />
         <Route path="/create" element={wrapWithLayout(CreateTournamentPage)} />
+        <Route path="/demo" element={wrapWithLayout(StyleDemoPage)} />
       </Routes>
     </AnimatePresence>
   );

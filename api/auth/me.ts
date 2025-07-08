@@ -1,7 +1,8 @@
-import { verifyJWT, parseAuthCookie } from '../../src/services/auth.js';
-import { applySecurityHeaders, applyCorsHeaders } from '../../src/utils/middleware.js';
+import { verifyJWT, parseAuthCookie } from '../../src/services/auth';
+import { applySecurityHeaders, applyCorsHeaders } from '../../src/utils/middleware';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-export default async function handler(req, res) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Apply security headers
   applySecurityHeaders(res);
   applyCorsHeaders(res, req.headers.origin);
@@ -47,14 +48,14 @@ export default async function handler(req, res) {
     return res.status(200).json({ user });
   } catch (error) {
     console.error('Auth verification error:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : 'Unknown',
       hasAuthSecret: !!process.env.AUTH_SECRET
     });
     return res.status(500).json({ 
       error: 'Authentication service error',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : 'Unknown error') : undefined
     });
   }
 }
