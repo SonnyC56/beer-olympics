@@ -11,13 +11,16 @@ const RSVPSchema = z.object({
   email: z.string().email('Valid email is required'),
   phone: z.string().min(1, 'Phone number is required'),
   
-  // Tournament Preferences
+  // Participation Type
+  participationType: z.enum(['player', 'spectator', 'designated_driver']).default('player'),
+  
+  // Tournament Preferences (only required for players)
   preferredPartner: z.string().optional(),
-  teamName: z.string().min(1, 'Team name is required'),
-  skillLevel: z.enum(['beginner', 'intermediate', 'advanced', 'legendary']),
+  teamName: z.string().optional(), // Optional for spectators/DDs
+  skillLevel: z.enum(['beginner', 'intermediate', 'advanced', 'legendary']).optional(),
   
   // Event Details
-  attendingEvents: z.array(z.string()),
+  attendingGames: z.array(z.string()).optional(), // Renamed from attendingEvents
   dietaryRestrictions: z.string().optional(),
   shirtSize: z.enum(['xs', 's', 'm', 'l', 'xl', 'xxl']),
   
@@ -30,8 +33,7 @@ const RSVPSchema = z.object({
   // Logistics
   needsTransportation: z.boolean().default(false),
   canOfferRide: z.boolean().default(false),
-  emergencyContact: z.string().min(1, 'Emergency contact is required'),
-  emergencyPhone: z.string().min(1, 'Emergency phone is required'),
+  isDesignatedDriver: z.boolean().default(false), // Special flag for DD achievement
   
   // Additional Options
   willingToVolunteer: z.boolean().default(false),
@@ -292,11 +294,10 @@ export const rsvpRouter = router({
           success: true,
           rsvps: result.rows,
           headers: [
-            'Name', 'Email', 'Phone', 'Team Name', 'Preferred Partner',
-            'Skill Level', 'Events', 'T-Shirt Size', 'Dietary Restrictions',
-            'Emergency Contact', 'Emergency Phone', 'Needs Transportation',
-            'Can Offer Ride', 'Willing to Volunteer', 'Bringing Guests',
-            'Guest Count', 'Submitted At', 'Status'
+            'Name', 'Email', 'Phone', 'Participation Type', 'Team Name', 'Preferred Partner',
+            'Skill Level', 'Games Attending', 'T-Shirt Size', 'Dietary Restrictions',
+            'Needs Transportation', 'Can Offer Ride', 'Is Designated Driver',
+            'Willing to Volunteer', 'Bringing Guests', 'Guest Count', 'Submitted At', 'Status'
           ]
         };
       } catch (error) {

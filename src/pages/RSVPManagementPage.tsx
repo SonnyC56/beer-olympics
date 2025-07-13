@@ -52,7 +52,7 @@ export function RSVPManagementPage() {
       filtered = filtered.filter(rsvp => 
         rsvp.fullName.toLowerCase().includes(term) ||
         rsvp.email.toLowerCase().includes(term) ||
-        rsvp.teamName.toLowerCase().includes(term) ||
+        rsvp.teamName?.toLowerCase().includes(term) ||
         rsvp.preferredPartner?.toLowerCase().includes(term)
       );
     }
@@ -301,7 +301,7 @@ export function RSVPManagementPage() {
                       </td>
                       <td className="p-3 text-white">{rsvp.teamName}</td>
                       <td className="p-3 text-white">{rsvp.preferredPartner || '-'}</td>
-                      <td className="p-3 text-white hidden md:table-cell">{rsvp.attendingEvents.length}</td>
+                      <td className="p-3 text-white hidden md:table-cell">{rsvp.attendingGames?.length || 0}</td>
                       <td className="p-3 text-white hidden lg:table-cell">{rsvp.shirtSize.toUpperCase()}</td>
                       <td className="p-3">
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${

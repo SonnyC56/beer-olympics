@@ -9,8 +9,8 @@ const buildRedirectURL = () => {
 };
 
 const client = new OAuth2Client(
-  process.env.AUTH_GOOGLE_ID,
-  process.env.AUTH_GOOGLE_SECRET,
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
   buildRedirectURL()
 );
 
@@ -23,8 +23,8 @@ export interface AuthSession {
 export async function generateAuthUrl(): Promise<string> {
   try {
     console.log('Generating auth URL with:', {
-      clientId: process.env.AUTH_GOOGLE_ID ? 'SET' : 'NOT SET',
-      clientSecret: process.env.AUTH_GOOGLE_SECRET ? 'SET' : 'NOT SET',
+      clientId: process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET',
       redirectUri: buildRedirectURL(),
       authUrl: process.env.AUTH_URL
     });
@@ -50,7 +50,7 @@ export async function verifyGoogleToken(code: string): Promise<User> {
     
     const ticket = await client.verifyIdToken({
       idToken: tokens.id_token!,
-      audience: process.env.AUTH_GOOGLE_ID!,
+      audience: process.env.GOOGLE_CLIENT_ID!,
     });
     
     const payload = ticket.getPayload();

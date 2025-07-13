@@ -1,4 +1,4 @@
-import { trpc } from '../utils/trpc';
+import { trpcClient } from '../utils/trpc';
 import { realtimeService } from './realtime';
 
 export interface RSVPData {
@@ -10,33 +10,35 @@ export interface RSVPData {
   email: string;
   phone: string;
   
-  // Tournament Preferences
-  preferredPartner: string;
-  teamName: string;
-  skillLevel: 'beginner' | 'intermediate' | 'advanced' | 'legendary';
+  // Participation Type
+  participationType: 'player' | 'spectator' | 'designated_driver';
+  
+  // Tournament Preferences (optional for spectators/DDs)
+  preferredPartner?: string;
+  teamName?: string;
+  skillLevel?: 'beginner' | 'intermediate' | 'advanced' | 'legendary';
   
   // Event Details
-  attendingEvents: string[];
-  dietaryRestrictions: string;
+  attendingGames?: string[]; // Renamed from attendingEvents
+  dietaryRestrictions?: string;
   shirtSize: 'xs' | 's' | 'm' | 'l' | 'xl' | 'xxl';
   
   // Fun Customization
-  favoriteGame: string;
-  victoryDance: string;
-  specialTalent: string;
-  motivationalQuote: string;
+  favoriteGame?: string;
+  victoryDance?: string;
+  specialTalent?: string;
+  motivationalQuote?: string;
   
   // Logistics
   needsTransportation: boolean;
   canOfferRide: boolean;
-  emergencyContact: string;
-  emergencyPhone: string;
+  isDesignatedDriver: boolean; // Special flag for DD achievement
   
   // Additional Options
   willingToVolunteer: boolean;
   bringingGuests: boolean;
   guestCount: number;
-  additionalRequests: string;
+  additionalRequests?: string;
   
   // Agreement
   agreeToTerms: boolean;
@@ -57,17 +59,18 @@ const CURRENT_RSVP_KEY = 'beer-olympics-current-rsvp';
 // Enhanced RSVP functions using tRPC backend
 export async function getTournamentRSVPs(tournamentSlug: string): Promise<RSVPData[]> {
   try {
-    const result = await (trpc.rsvp.getByTournament as any)({ tournamentSlug });
+    const result = await trpcClient.rsvp.getByTournament.query({ tournamentSlug });
     return result.success ? result.rsvps : [];
   } catch (error) {
     console.error('Failed to load RSVPs:', error);
+    // Fallback to mock data for development
     return [];
   }
 }
 
 export async function getRSVPById(id: string): Promise<RSVPData | null> {
   try {
-    const result = await (trpc.rsvp.getById as any)({ id });
+    const result = await trpcClient.rsvp.getById.query({ id });
     return result.success ? result.rsvp : null;
   } catch (error) {
     console.error('Failed to load RSVP:', error);
@@ -77,7 +80,7 @@ export async function getRSVPById(id: string): Promise<RSVPData | null> {
 
 export async function saveRSVP(rsvpData: Omit<RSVPData, 'id' | 'submittedAt' | 'status' | 'type' | 'docType' | 'createdAt' | 'updatedAt'>): Promise<RSVPData> {
   try {
-    const result = await (trpc.rsvp.create as any)(rsvpData);
+    const result = await trpcClient.rsvp.create.mutate(rsvpData);
     if (result.success) {
       // Clear progress after successful submission
       clearRSVPProgress();
@@ -96,7 +99,7 @@ export async function saveRSVP(rsvpData: Omit<RSVPData, 'id' | 'submittedAt' | '
         console.warn('Failed to emit real-time RSVP event:', rtError);
       }
       
-      return result.rsvp;
+      return result.rsvp as RSVPData;
     }
     throw new Error(result.message || 'Failed to save RSVP');
   } catch (error) {
@@ -107,7 +110,7 @@ export async function saveRSVP(rsvpData: Omit<RSVPData, 'id' | 'submittedAt' | '
 
 export async function updateRSVP(id: string, updates: Partial<RSVPData>): Promise<RSVPData | null> {
   try {
-    const result = await (trpc.rsvp.update as any)({ id, ...updates });
+    const result = await trpcClient.rsvp.update.mutate({ id, ...updates });
     return result.success ? result.rsvp : null;
   } catch (error) {
     console.error('Failed to update RSVP:', error);
@@ -117,7 +120,7 @@ export async function updateRSVP(id: string, updates: Partial<RSVPData>): Promis
 
 export async function deleteRSVP(id: string): Promise<boolean> {
   try {
-    const result = await (trpc.rsvp.delete as any)({ id });
+    const result = await trpcClient.rsvp.delete.mutate({ id });
     return result.success;
   } catch (error) {
     console.error('Failed to delete RSVP:', error);
@@ -187,7 +190,7 @@ export function clearRSVPProgress() {
 // Export RSVPs to CSV
 export async function exportRSVPsToCSV(tournamentSlug: string): Promise<string> {
   try {
-    const result = await (trpc.rsvp.export as any)({ tournamentSlug });
+    const result = await trpcClient.rsvp.export.query({ tournamentSlug });
     
     if (!result.success || result.rsvps.length === 0) {
       return '';
@@ -200,16 +203,16 @@ export async function exportRSVPsToCSV(tournamentSlug: string): Promise<string> 
       rsvp.fullName,
       rsvp.email,
       rsvp.phone,
-      rsvp.teamName,
+      rsvp.participationType || 'player',
+      rsvp.teamName || 'None',
       rsvp.preferredPartner || 'None',
-      rsvp.skillLevel,
-      rsvp.attendingEvents?.join('; ') || '',
+      rsvp.skillLevel || 'N/A',
+      rsvp.attendingGames?.join('; ') || '',
       rsvp.shirtSize?.toUpperCase() || '',
       rsvp.dietaryRestrictions || 'None',
-      rsvp.emergencyContact,
-      rsvp.emergencyPhone,
       rsvp.needsTransportation ? 'Yes' : 'No',
       rsvp.canOfferRide ? 'Yes' : 'No',
+      rsvp.isDesignatedDriver ? 'Yes' : 'No',
       rsvp.willingToVolunteer ? 'Yes' : 'No',
       rsvp.bringingGuests ? 'Yes' : 'No',
       rsvp.guestCount?.toString() || '0',
@@ -233,7 +236,7 @@ export async function exportRSVPsToCSV(tournamentSlug: string): Promise<string> 
 // Get RSVP statistics for a tournament
 export async function getRSVPStats(tournamentSlug: string) {
   try {
-    const result = await (trpc.rsvp.getStats as any)({ tournamentSlug });
+    const result = await trpcClient.rsvp.getStats.query({ tournamentSlug });
     return result.success ? result.stats : {
       totalRSVPs: 0,
       confirmedRSVPs: 0,
