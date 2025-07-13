@@ -2,9 +2,7 @@ import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { appRouter } from '../../src/api/routers/index';
 import { createTRPCContext } from '../../src/api/trpc';
 
-export const config = {
-  runtime: 'edge',
-};
+// Removed edge runtime config to support Node.js modules
 
 export default async function handler(req: Request) {
   return fetchRequestHandler({

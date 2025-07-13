@@ -18,4 +18,5 @@ export const authOptions = {
   },
 };
 
+// Export default handler directly
 export default NextAuth(authOptions);
