@@ -41,7 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       // Create or update user profile with proper labeling
       const currentTime = new Date().toISOString();
-      const userDoc: any = {
+      const userDoc: Record<string, unknown> = {
         _type: 'user',                    // Document type label
         ...user,
         lastLogin: currentTime,
@@ -63,11 +63,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const existingUser = await getDocument(`user::${user.id}`);
         if (existingUser) {
           // Preserve existing data
-          userDoc.createdAt = (existingUser as any).createdAt;
-          userDoc.preferences = (existingUser as any).preferences || userDoc.preferences;
-          userDoc.stats = (existingUser as any).stats || userDoc.stats;
+          userDoc.createdAt = (existingUser as Record<string, unknown>).createdAt;
+          userDoc.preferences = (existingUser as Record<string, unknown>).preferences || userDoc.preferences;
+          userDoc.stats = (existingUser as Record<string, unknown>).stats || userDoc.stats;
         }
-      } catch (error) {
+      } catch {
         // User doesn't exist, set createdAt
         userDoc.createdAt = currentTime;
       }

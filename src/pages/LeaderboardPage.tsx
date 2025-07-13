@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Trophy, Medal, Award } from 'lucide-react';
 import { trpc } from '@/utils/trpc';
-import { useTournamentUpdates } from '@/hooks/usePusher';
+import { useTournamentUpdates } from '@/hooks/useRealtime';
 import { useCallback } from 'react';
 
 export function LeaderboardPage() {

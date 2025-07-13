@@ -184,19 +184,35 @@ body {
   font-family: 'Fredoka', 'Nunito', system-ui, -apple-system, sans-serif;
   font-weight: 600;
   @apply text-white font-bold py-4 px-8 rounded-2xl transform transition-all duration-200 ease-in-out;
-  @apply shadow-party hover:scale-105 active:scale-95;
-  @apply bg-gradient-sunset;
+  box-shadow: 
+    0 4px 8px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 0.05)),
+    0 8px 16px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 0.1)),
+    0 16px 32px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 0.15));
+  @apply hover:scale-105 active:scale-95;
+  background: linear-gradient(135deg, #FF6B6B 0%, #FFA726 50%, #FF7043 100%);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .btn-party:hover {
-  @apply shadow-glow animate-pulse-glow;
+  box-shadow: 
+    0 0 20px rgba(255, 107, 107, 0.4),
+    0 0 40px rgba(78, 205, 196, 0.3),
+    0 0 60px rgba(69, 183, 209, 0.2);
+  animation: pulse-glow 2s ease-in-out infinite;
 }
 
 .btn-beer {
-  @apply font-beer text-beer-dark font-bold py-4 px-8 rounded-2xl transform transition-all duration-200 ease-in-out;
-  @apply shadow-beer hover:scale-105 active:scale-95;
-  @apply bg-gradient-beer border-2 border-beer-amber;
+  font-family: 'Bungee', 'Fredoka', sans-serif;
+  color: #92400E;
+  @apply font-bold py-4 px-8 rounded-2xl transform transition-all duration-200 ease-in-out;
+  box-shadow: 
+    0 0 25px rgba(245, 158, 11, 0.5),
+    0 0 50px rgba(251, 191, 36, 0.3),
+    0 0 75px rgba(252, 211, 77, 0.2);
+  @apply hover:scale-105 active:scale-95;
+  background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 50%, #FCD34D 100%);
+  @apply border-2;
+  border-color: #F59E0B;
   text-shadow: 1px 1px 2px rgba(146, 64, 14, 0.3);
 }
 
@@ -204,46 +220,68 @@ body {
   font-family: 'Fredoka', 'Nunito', system-ui, -apple-system, sans-serif;
   font-weight: 600;
   @apply text-white font-bold py-4 px-8 rounded-2xl transform transition-all duration-200 ease-in-out;
-  @apply shadow-victory hover:scale-105 active:scale-95;
-  @apply bg-gradient-victory;
+  box-shadow: 
+    0 0 30px rgba(16, 185, 129, 0.6),
+    0 0 60px rgba(52, 211, 153, 0.4),
+    0 0 90px rgba(110, 231, 183, 0.2);
+  @apply hover:scale-105 active:scale-95;
+  background: linear-gradient(135deg, #10B981 0%, #34D399 50%, #6EE7B7 100%);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 /* Card Styles */
 .card-party {
-  @apply bg-neutral-0/85 backdrop-blur-md rounded-3xl p-6 shadow-party;
+  background-color: hsl(40 33% 97% / 0.85);
+  @apply backdrop-blur-md rounded-3xl p-6;
+  box-shadow: 
+    0 4px 8px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 0.05)),
+    0 8px 16px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 0.1)),
+    0 16px 32px hsl(var(--shadow-color) / calc(var(--shadow-strength) + 0.15));
   @apply transform transition-all duration-300 ease-in-out;
-  @apply hover:scale-[1.02] hover:shadow-glow border border-white/20;
+  @apply hover:scale-[1.02] border border-white/20;
 }
 
 .card-beer {
-  @apply bg-beer-foam/90 backdrop-blur-md rounded-3xl p-6 shadow-beer;
+  background-color: rgb(255 251 235 / 0.9);
+  @apply backdrop-blur-md rounded-3xl p-6;
+  box-shadow: 
+    0 0 25px rgba(245, 158, 11, 0.5),
+    0 0 50px rgba(251, 191, 36, 0.3),
+    0 0 75px rgba(252, 211, 77, 0.2);
   @apply transform transition-all duration-300 ease-in-out;
-  @apply hover:scale-[1.02] hover:shadow-beer border-2 border-beer-gold/30;
+  @apply hover:scale-[1.02] border-2;
+  border-color: rgb(251 191 36 / 0.3);
 }
 
 .card-victory {
-  @apply bg-neutral-0/85 backdrop-blur-md rounded-3xl p-6 shadow-victory;
+  background-color: hsl(40 33% 97% / 0.85);
+  @apply backdrop-blur-md rounded-3xl p-6;
+  box-shadow: 
+    0 0 30px rgba(16, 185, 129, 0.6),
+    0 0 60px rgba(52, 211, 153, 0.4),
+    0 0 90px rgba(110, 231, 183, 0.2);
   @apply transform transition-all duration-300 ease-in-out;
-  @apply hover:scale-[1.02] hover:shadow-victory border-2 border-party-green/30;
+  @apply hover:scale-[1.02] border-2;
+  border-color: rgb(16 185 129 / 0.3);
 }
 
 /* Input Styles */
 .input-party {
   font-family: 'Fredoka', 'Nunito', system-ui, -apple-system, sans-serif;
   font-weight: 600;
-  @apply bg-white/95 border-3 border-party-pink rounded-2xl p-4;
-  @apply focus:border-party-cyan focus:ring-4 focus:ring-party-cyan/30;
+  @apply bg-white/95 border-3 rounded-2xl p-4;
+  border-color: #EC4899;
+  @apply focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/30;
   @apply transition-all duration-200 placeholder-neutral-900/50;
-  @apply shadow-md hover:shadow-glow;
+  @apply shadow-md;
 }
 
 .input-beer {
   font-family: 'Fredoka', 'Nunito', system-ui, -apple-system, sans-serif;
   font-weight: 600;
-  @apply bg-beer-foam/95 border-3 border-beer-amber rounded-2xl p-4;
-  @apply focus:border-beer-gold focus:ring-4 focus:ring-beer-gold/30;
-  @apply transition-all duration-200 placeholder-beer-dark/60;
+  @apply bg-amber-50/95 border-3 border-amber-500 rounded-2xl p-4;
+  @apply focus:border-amber-400 focus:ring-4 focus:ring-amber-400/30;
+  @apply transition-all duration-200 placeholder-amber-800/60;
 }
 
 /* Special Effects */

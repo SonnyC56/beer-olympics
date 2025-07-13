@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+// Simple script to create PNG icons
+function createIcon(size) {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  
+  // Fill background
+  ctx.fillStyle = '#ff1493';
+  ctx.fillRect(0, 0, size, size);
+  
+  // Draw text
+  ctx.fillStyle = 'white';
+  ctx.font = `${size/2}px Arial`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🍺', size/2, size/2);
+  
+  // Convert to data URL
+  return canvas.toDataURL('image/png');
+}
+
+// Create icons
+console.log('144x144 icon:', createIcon(144));
+console.log('72x72 icon:', createIcon(72));
+</script>
+</head>
+<body>
+<p>Open console to see base64 icons</p>
+</body>
+</html>

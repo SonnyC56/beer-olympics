@@ -4,44 +4,41 @@ import { motion } from 'framer-motion';
 import { Settings, Users, Calendar, Trophy, Lock, Unlock, Copy, ExternalLink, ArrowLeft, Beer, Crown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/auth';
+import { trpc } from '@/utils/trpc';
+import type { Team } from '@/types';
 
 export function ControlRoomPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isClosing, setIsClosing] = useState(false);
-
-  const { data: tournament } = trpc.tournament.getBySlug.useQuery(
+  
+  // Use tRPC hooks
+  const { data: tournament, refetch: refetchTournament } = trpc.tournament.getBySlug.useQuery(
     { slug: slug! },
     { enabled: !!slug }
   );
-
-  const { data: teams } = trpc.tournament.listTeams.useQuery(
+  const { data: teams = [] } = trpc.tournament.listTeams.useQuery(
     { tournamentId: slug! },
     { enabled: !!slug }
   );
-
-  const setOpen = trpc.tournament.setOpen.useMutation({
-    onSuccess: () => {
-      toast.success(tournament?.isOpen ? 'Registration closed' : 'Registration opened');
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+  const setOpenMutation = trpc.tournament.setOpen.useMutation();
 
   const handleToggleRegistration = async () => {
-    if (!tournament) return;
+    if (!tournament || !slug) return;
     
     setIsClosing(true);
     try {
-      await setOpen.mutateAsync({
-        slug: slug!,
+      await setOpenMutation.mutateAsync({
+        slug,
         isOpen: !tournament.isOpen,
       });
+      toast.success(tournament.isOpen ? 'Registration closed' : 'Registration opened');
+      refetchTournament();
+    } catch (error) {
+      toast.error('Failed to update registration status');
     } finally {
       setIsClosing(false);
     }
@@ -140,13 +137,13 @@ export function ControlRoomPage() {
                   Registered Teams
                 </CardTitle>
                 <CardDescription className="text-gray-300 text-lg">
-                  {teams?.length || 0} teams ready to compete
+                  {teams.length} teams ready to compete
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {teams && teams.length > 0 ? (
+                {teams.length > 0 ? (
                   <div className="space-y-4">
-                    {teams.map((team, index) => (
+                    {teams.map((team: Team, index: number) => (
                       <motion.div
                         key={team.id}
                         initial={{ opacity: 0, x: -20 }}
@@ -281,6 +278,14 @@ export function ControlRoomPage() {
                 >
                   <ExternalLink className="w-4 h-4 mr-3" />
                   TV Display Mode
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-11 text-white hover:bg-white/10 hover:text-amber-400 transition-all duration-200"
+                  onClick={() => navigate(`/rsvp-management/${slug}`)}
+                >
+                  <Users className="w-4 h-4 mr-3" />
+                  Manage RSVPs
                 </Button>
                 <Button
                   variant="ghost"

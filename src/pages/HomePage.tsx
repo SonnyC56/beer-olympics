@@ -18,6 +18,18 @@ export function HomePage() {
     navigate('/create');
   };
 
+  const handleStyleGuide = () => {
+    navigate('/style-guide');
+  };
+
+  const handleRSVP = () => {
+    navigate('/rsvp');
+  };
+
+  const handleDemoTournament = () => {
+    navigate('/manage/demo-tournament');
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <header className="text-center mb-12">
@@ -63,6 +75,59 @@ export function HomePage() {
           </CardContent>
         </Card>
       </main>
+
+      {/* Test Pages Section */}
+      <section className="mt-12 max-w-4xl w-full">
+        <h2 className="text-3xl font-party font-bold text-neutral-0 text-center mb-6">
+          🎨 Test Our New Features! 🎉
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="card-party">
+            <CardHeader>
+              <CardTitle className="font-beer">🎨 STYLE GUIDE</CardTitle>
+              <CardDescription>
+                Explore our fun & playful design system!
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={handleStyleGuide} className="btn-party w-full">
+                View Style Guide
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="card-beer">
+            <CardHeader>
+              <CardTitle className="font-beer">📋 RSVP PAGE</CardTitle>
+              <CardDescription>
+                Try our fully functional RSVP form with preferred partner field! All data saves locally.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={handleRSVP} className="btn-beer w-full">
+                Test RSVP Form
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="card-victory lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="font-beer flex items-center gap-2">
+                🏆 TOURNAMENT MANAGEMENT
+                <span className="bg-gradient-party text-white px-2 py-1 rounded-full text-xs">NEW!</span>
+              </CardTitle>
+              <CardDescription>
+                Experience our brand new tournament management system with live leaderboards, bracket visualization, game configuration, and social features!
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={handleDemoTournament} className="btn-victory w-full">
+                View Demo Tournament
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
     </div>
   );
 }

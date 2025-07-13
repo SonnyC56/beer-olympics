@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  beer-olympics:
+    image: node:20-alpine
+    working_dir: /app
+    ports:
+      - "9871:5173"
+      - "9872:3002"
+    environment:
+      - NODE_ENV=development
+      - AUTH_SECRET=${AUTH_SECRET:-dev-secret-key}
+      - AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}
+      - AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}
+      - COUCHBASE_CONNECTION_STRING=${COUCHBASE_CONNECTION_STRING}
+      - COUCHBASE_USERNAME=${COUCHBASE_USERNAME}
+      - COUCHBASE_PASSWORD=${COUCHBASE_PASSWORD}
+      - COUCHBASE_BUCKET=${COUCHBASE_BUCKET:-beer_olympics}
+      - PUSHER_APP_ID=${PUSHER_APP_ID}
+      - PUSHER_KEY=${PUSHER_KEY}
+      - PUSHER_SECRET=${PUSHER_SECRET}
+      - PUSHER_CLUSTER=${PUSHER_CLUSTER}
+      - PUPPETEER_SKIP_DOWNLOAD=true
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm install -g vercel && npm run dev:full"
+    stdin_open: true
+    tty: true

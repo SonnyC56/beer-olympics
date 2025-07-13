@@ -4,7 +4,7 @@ import { getDocument, upsertDocument, query } from '../../services/couchbase';
 import { nanoid } from 'nanoid';
 import type { Match, ScoreSubmission, ScoreEntry, Event } from '../../types';
 import { TRPCError } from '@trpc/server';
-import { triggerEvent, getTournamentChannel } from '../../services/pusher';
+import { pusherServer, safeBroadcast } from '../services/pusher-server';
 
 export const matchRouter = router({
   submitScore: protectedProcedure
@@ -201,6 +201,17 @@ export const matchRouter = router({
         };
         
         await upsertDocument(`match::${matchId}`, match);
+        
+        // Broadcast game start event
+        await safeBroadcast(() =>
+          pusherServer.broadcastGameStart(
+            event.tournamentId,
+            matchId,
+            event.name,
+            [input.teamA, input.teamB]
+          )
+        );
+        
         return { matchId };
       } catch (error) {
         if (error instanceof TRPCError) throw error;
@@ -212,6 +223,47 @@ export const matchRouter = router({
       }
     }),
 });
+
+async function updateAndBroadcastLeaderboard(tournamentId: string) {
+  try {
+    // Get current rankings
+    const result = await query(
+      `SELECT teamId, 
+              SUM(points) as totalPoints,
+              COUNT(DISTINCT CASE WHEN reason LIKE 'Won %' THEN 1 END) as wins,
+              COUNT(DISTINCT CASE WHEN reason LIKE 'Played %' AND reason NOT LIKE 'Won %' THEN 1 END) as losses
+       FROM \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default
+       WHERE _type = 'score_entry' AND tournamentId = $1
+       GROUP BY teamId
+       ORDER BY totalPoints DESC`,
+      { parameters: [tournamentId] }
+    );
+    
+    // Calculate rankings with position changes
+    const rankings = result.rows.map((row: any, index: number) => ({
+      teamId: row.teamId,
+      rank: index + 1,
+      points: row.totalPoints || 0,
+      wins: row.wins || 0,
+      losses: row.losses || 0,
+      pointDiff: 0, // Would need match scores to calculate
+    }));
+    
+    // For now, we don't track position changes (would need to store previous rankings)
+    const changedPositions: any[] = [];
+    
+    // Broadcast leaderboard update
+    await safeBroadcast(() =>
+      pusherServer.broadcastLeaderboardUpdate(
+        tournamentId,
+        rankings,
+        changedPositions
+      )
+    );
+  } catch (error) {
+    console.error('Failed to update leaderboard:', error);
+  }
+}
 
 async function confirmScore(submissionId: string) {
   try {
@@ -248,7 +300,7 @@ async function confirmScore(submissionId: string) {
       _type: 'score_entry',
       id: nanoid(),
       tournamentId: event.tournamentId,
-      eventId: match.eventId,
+      eventId: match.eventId || '',
       teamId: submission.winnerId,
       points: winnerPoints,
       reason: `Won ${event.name}`,
@@ -256,11 +308,18 @@ async function confirmScore(submissionId: string) {
     };
     
     const loserTeamId = match.teamA === submission.winnerId ? match.teamB : match.teamA;
+    if (!loserTeamId) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Invalid match teams',
+      });
+    }
+    
     const loserEntry: ScoreEntry = {
       _type: 'score_entry',
       id: nanoid(),
       tournamentId: event.tournamentId,
-      eventId: match.eventId,
+      eventId: match.eventId || '',
       teamId: loserTeamId,
       points: loserPoints,
       reason: `Played ${event.name}`,
@@ -275,29 +334,18 @@ async function confirmScore(submissionId: string) {
     submission.confirmedAt = new Date().toISOString();
     await upsertDocument(`score_submission::${submissionId}`, submission);
     
-    // Trigger real-time updates
-    await Promise.all([
-      // Score update for winner
-      triggerEvent(getTournamentChannel(event.tournamentId), 'score-update', {
-        tournamentId: event.tournamentId,
-        matchId: match.id,
-        teamId: submission.winnerId,
-        points: winnerPoints,
-      }),
-      // Score update for loser
-      triggerEvent(getTournamentChannel(event.tournamentId), 'score-update', {
-        tournamentId: event.tournamentId,
-        matchId: match.id,
-        teamId: loserTeamId,
-        points: loserPoints,
-      }),
-      // Match complete event
-      triggerEvent(getTournamentChannel(event.tournamentId), 'match-complete', {
-        tournamentId: event.tournamentId,
-        matchId: match.id,
-        winner: submission.winnerId,
-      }),
-    ]);
+    // Broadcast match completion
+    await safeBroadcast(() =>
+      pusherServer.broadcastMatchComplete(
+        event.tournamentId,
+        submission.matchId,
+        submission.winnerId,
+        submission.score
+      )
+    );
+    
+    // Calculate and broadcast leaderboard update
+    await updateAndBroadcastLeaderboard(event.tournamentId);
   } catch (error) {
     console.error('Failed to confirm score:', error);
     throw error;

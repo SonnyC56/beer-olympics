@@ -1,0 +1,25 @@
+# Development Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies for better development experience
+RUN apk add --no-cache git
+
+# Copy package files
+COPY package*.json ./
+
+# Skip Puppeteer download to avoid connection issues
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+
+# Install all dependencies (including devDependencies)
+RUN npm ci
+
+# Copy the rest of the application
+COPY . .
+
+# Expose ports for Vite and Vercel dev
+EXPOSE 5173 3002
+
+# Start development servers
+CMD ["npm", "run", "dev:full"]

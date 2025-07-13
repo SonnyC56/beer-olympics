@@ -1,0 +1,14 @@
+node_modules
+.git
+.gitignore
+dist
+.env
+.env.local
+.env.local.example
+*.log
+.DS_Store
+test-results
+playwright-report
+coverage
+.vite
+.vercel

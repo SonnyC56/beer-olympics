@@ -49,12 +49,12 @@ export function JoinPage() {
     console.log('Tournament loaded:', tournament);
   }
 
-  const joinTeamMutation = trpc.team.joinPublic.useMutation({
+  const joinTeamMutation = trpc.legacyTeam.joinPublic.useMutation({
     onSuccess: () => {
       toast.success('Team created successfully!');
       navigate(`/dashboard/${slug}`);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast.error(`Failed to create team: ${error.message}`);
       console.error('Join team error:', error);
     },

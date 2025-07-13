@@ -4,7 +4,7 @@ import { getDocument, upsertDocument, query } from '../../services/couchbase';
 import { nanoid } from 'nanoid';
 import type { Team, Tournament } from '../../types';
 import { TRPCError } from '@trpc/server';
-import { triggerEvent, getTournamentChannel } from '../../services/pusher';
+import { pusherServer, safeBroadcast } from '../services/pusher-server';
 
 export const teamRouter = router({
   joinPublic: publicProcedure
@@ -64,16 +64,15 @@ export const teamRouter = router({
         
         await upsertDocument(`team::${teamId}`, team);
         
-        // Trigger real-time event for new team
-        await triggerEvent(getTournamentChannel(input.slug), 'team-joined', {
-          tournamentId: input.slug,
-          team: {
+        // Broadcast team joined event
+        await safeBroadcast(() =>
+          pusherServer.broadcastTeamJoined(input.slug, {
             id: teamId,
             name: team.name,
             colorHex: team.colorHex,
             flagCode: team.flagCode,
-          },
-        });
+          })
+        );
         
         return { teamId };
       } catch (error) {

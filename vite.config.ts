@@ -11,14 +11,11 @@ export default defineConfig({
     },
   },
   server: {
+    host: true, // Allow external connections
+    port: 5173,
     proxy: {
-      '/api/trpc': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false,
-      },
-      '/api/auth': {
-        target: 'http://localhost:3000',
+      '/api': {
+        target: process.env.DOCKER ? 'http://localhost:3002' : 'http://localhost:3002',
         changeOrigin: true,
         secure: false,
       },

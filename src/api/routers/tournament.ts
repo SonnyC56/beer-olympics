@@ -4,7 +4,7 @@ import { getDocument, upsertDocument, query } from '../../services/couchbase';
 import { nanoid } from 'nanoid';
 import type { Tournament, Team } from '../../types';
 import { TRPCError } from '@trpc/server';
-import { triggerEvent, getTournamentChannel } from '../../services/pusher';
+import { pusherServer, safeBroadcast } from '../services/pusher-server';
 
 export const tournamentRouter = router({
   create: protectedProcedure
@@ -19,16 +19,19 @@ export const tournamentRouter = router({
           .replace(/\s+/g, '-')
           .substring(0, 50) + '-' + nanoid(6);
         
-        const tournament: Tournament = {
+        // Note: This router is deprecated - use tournament-enhanced.ts instead
+        const tournament = {
           _type: 'tournament',
           slug,
           name: input.name,
           date: input.date,
           ownerId: ctx.user.id,
           isOpen: true,
+          format: 'single_elimination', // Default format
+          maxTeams: 16, // Default max teams
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-        };
+        } as Tournament;
         
         await upsertDocument(`tournament::${slug}`, tournament);
         return { slug };
@@ -94,11 +97,10 @@ export const tournamentRouter = router({
         
         await upsertDocument(`tournament::${input.slug}`, tournament);
         
-        // Trigger real-time event for tournament status change
-        await triggerEvent(getTournamentChannel(input.slug), 'tournament-status', {
-          tournamentId: input.slug,
-          isOpen: input.isOpen,
-        });
+        // Broadcast tournament status change
+        await safeBroadcast(() =>
+          pusherServer.broadcastTournamentStatus(input.slug, input.isOpen)
+        );
         
         return { ok: true };
       } catch (error) {

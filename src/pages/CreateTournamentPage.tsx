@@ -1,20 +1,24 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Beer, Calendar, Users, Trophy, ArrowLeft } from 'lucide-react';
+import { Beer, Calendar, Users, Trophy, ArrowLeft, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/auth';
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
+import { MegaTournamentCreator } from '@/components/MegaTournamentCreator';
 
 export function CreateTournamentPage() {
   const navigate = useNavigate();
   const { user, signIn } = useAuth();
   const [tournamentName, setTournamentName] = useState('');
   const [tournamentDate, setTournamentDate] = useState('');
+  const [tournamentFormat, setTournamentFormat] = useState<'single_elimination' | 'double_elimination' | 'round_robin' | 'group_stage' | 'free_for_all' | 'masters'>('single_elimination');
+  const [maxTeams, setMaxTeams] = useState(8);
   const [isCreating, setIsCreating] = useState(false);
+  const [isMegaTournament, setIsMegaTournament] = useState(false);
 
   const createTournamentMutation = trpc.tournament.create.useMutation({
     onSuccess: (data) => {
@@ -53,6 +57,17 @@ export function CreateTournamentPage() {
     createTournamentMutation.mutate({
       name: tournamentName.trim(),
       date: tournamentDate,
+      format: tournamentFormat,
+      maxTeams: maxTeams,
+      settings: {
+        allowTies: false,
+        pointsPerWin: 3,
+        pointsPerLoss: 0,
+        tiebreakMethod: 'head2head',
+        autoAdvance: true,
+        bronzeMatch: false,
+        seedingMethod: 'random'
+      }
     });
   };
 
@@ -140,10 +155,34 @@ export function CreateTournamentPage() {
                 <CardDescription className="text-gray-300 text-lg max-w-md mx-auto">
                   Set up your Beer Olympics event and get ready for epic competition
                 </CardDescription>
+                <div className="flex justify-center gap-2 mt-6">
+                  <Button
+                    variant={!isMegaTournament ? "default" : "outline"}
+                    onClick={() => setIsMegaTournament(false)}
+                    className={!isMegaTournament ? "bg-amber-500 hover:bg-amber-600" : "border-white/30 text-white hover:bg-white/10"}
+                  >
+                    <Trophy className="w-4 h-4 mr-2" />
+                    Single Tournament
+                  </Button>
+                  <Button
+                    variant={isMegaTournament ? "default" : "outline"}
+                    onClick={() => setIsMegaTournament(true)}
+                    className={isMegaTournament ? "bg-amber-500 hover:bg-amber-600" : "border-white/30 text-white hover:bg-white/10"}
+                  >
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Mega Tournament
+                  </Button>
+                </div>
               </div>
             </CardHeader>
 
             <CardContent className="space-y-8 px-8 pb-8">
+              {isMegaTournament ? (
+                <div className="bg-transparent">
+                  <MegaTournamentCreator />
+                </div>
+              ) : (
+                <>
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -177,6 +216,50 @@ export function CreateTournamentPage() {
                   value={tournamentDate}
                   onChange={(e) => setTournamentDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
+                  className="h-14 text-lg bg-white/10 border-white/20 text-white focus:bg-white/20 focus:border-amber-400/50 transition-all duration-200"
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45 }}
+                className="space-y-3"
+              >
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-amber-400" />
+                  Tournament Format
+                </label>
+                <select
+                  value={tournamentFormat}
+                  onChange={(e) => setTournamentFormat(e.target.value as any)}
+                  className="h-14 w-full text-lg bg-white/10 border border-white/20 text-white focus:bg-white/20 focus:border-amber-400/50 transition-all duration-200 rounded-md px-3"
+                >
+                  <option value="single_elimination" className="bg-gray-800 text-white">Single Elimination</option>
+                  <option value="double_elimination" className="bg-gray-800 text-white">Double Elimination</option>
+                  <option value="round_robin" className="bg-gray-800 text-white">Round Robin</option>
+                  <option value="group_stage" className="bg-gray-800 text-white">Group Stage</option>
+                  <option value="free_for_all" className="bg-gray-800 text-white">Free For All</option>
+                  <option value="masters" className="bg-gray-800 text-white">Masters</option>
+                </select>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.47 }}
+                className="space-y-3"
+              >
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                  <Users className="w-4 h-4 text-amber-400" />
+                  Maximum Teams
+                </label>
+                <Input
+                  type="number"
+                  min="2"
+                  max="128"
+                  value={maxTeams}
+                  onChange={(e) => setMaxTeams(parseInt(e.target.value) || 8)}
                   className="h-14 text-lg bg-white/10 border-white/20 text-white focus:bg-white/20 focus:border-amber-400/50 transition-all duration-200"
                 />
               </motion.div>
@@ -221,6 +304,8 @@ export function CreateTournamentPage() {
                   )}
                 </Button>
               </motion.div>
+                </>
+              )}
             </CardContent>
           </Card>
         </motion.div>

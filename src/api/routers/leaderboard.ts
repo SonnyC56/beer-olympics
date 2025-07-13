@@ -43,17 +43,17 @@ export const leaderboardRouter = router({
         
         // Create a map of scores
         const scoreMap = new Map<string, number>();
-        scoresResult.rows.forEach((row: any) => {
-          scoreMap.set(row.teamId, row.total || 0);
+        scoresResult.rows.forEach((row: Record<string, unknown>) => {
+          scoreMap.set(row.teamId as string, (row.total as number) || 0);
         });
         
         // Combine teams with scores
-        const leaderboard = teamsResult.rows.map((team: any) => ({
-          teamId: team.id,
-          teamName: team.name,
-          colorHex: team.colorHex,
-          flagCode: team.flagCode,
-          totalPoints: scoreMap.get(team.id) || 0,
+        const leaderboard = teamsResult.rows.map((team: Record<string, unknown>) => ({
+          teamId: team.id as string,
+          teamName: team.name as string,
+          colorHex: team.colorHex as string,
+          flagCode: team.flagCode as string,
+          totalPoints: scoreMap.get(team.id as string) || 0,
         }));
         
         // Sort by points descending

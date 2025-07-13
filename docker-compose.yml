@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile.production
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}
+      - AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}
+      - COUCHBASE_CONNECTION_STRING=${COUCHBASE_CONNECTION_STRING}
+      - COUCHBASE_USERNAME=${COUCHBASE_USERNAME}
+      - COUCHBASE_PASSWORD=${COUCHBASE_PASSWORD}
+      - COUCHBASE_BUCKET=${COUCHBASE_BUCKET}
+      - MUX_TOKEN_ID=${MUX_TOKEN_ID}
+      - MUX_TOKEN_SECRET=${MUX_TOKEN_SECRET}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - PUSHER_APP_ID=${PUSHER_APP_ID}
+      - PUSHER_KEY=${PUSHER_KEY}
+      - PUSHER_SECRET=${PUSHER_SECRET}
+      - PUSHER_CLUSTER=${PUSHER_CLUSTER}
+    volumes:
+      - ./src:/app/src
+      - ./api:/app/api
+      - ./public:/app/public
+      - /app/node_modules
+    command: npm run dev
+
+  # Development mode with hot reload
+  dev:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "9873:5173"
+      - "9874:3002"
+    environment:
+      - NODE_ENV=development
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}
+      - AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}
+      - COUCHBASE_CONNECTION_STRING=${COUCHBASE_CONNECTION_STRING}
+      - COUCHBASE_USERNAME=${COUCHBASE_USERNAME}
+      - COUCHBASE_PASSWORD=${COUCHBASE_PASSWORD}
+      - COUCHBASE_BUCKET=${COUCHBASE_BUCKET}
+      - MUX_TOKEN_ID=${MUX_TOKEN_ID}
+      - MUX_TOKEN_SECRET=${MUX_TOKEN_SECRET}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - PUSHER_APP_ID=${PUSHER_APP_ID}
+      - PUSHER_KEY=${PUSHER_KEY}
+      - PUSHER_SECRET=${PUSHER_SECRET}
+      - PUSHER_CLUSTER=${PUSHER_CLUSTER}
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev:full

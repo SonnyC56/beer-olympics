@@ -77,6 +77,10 @@ export default {
           '0 8px 16px rgba(78, 205, 196, 0.2)'
         ],
         'glow': '0 0 20px rgba(255, 107, 107, 0.5)',
+      },
+      boxShadow: {
+        'party': '0 4px 8px rgba(255, 107, 107, 0.3), 0 8px 16px rgba(78, 205, 196, 0.2)',
+        'glow': '0 0 20px rgba(255, 107, 107, 0.5)',
       }
     },
   },

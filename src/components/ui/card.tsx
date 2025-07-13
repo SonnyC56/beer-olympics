@@ -11,7 +11,7 @@ const Card = React.forwardRef<
   <MotionCard
     ref={ref}
     className={cn(
-      "rounded-3xl bg-neutral-0/90 backdrop-blur-sm text-neutral-900 shadow-party transform transition-all duration-300 ease-in-out",
+      "rounded-3xl bg-neutral-0/90 backdrop-blur-sm text-neutral-900 shadow-lg transform transition-all duration-300 ease-in-out",
       className
     )}
     initial={{ opacity: 0, y: 20 }}

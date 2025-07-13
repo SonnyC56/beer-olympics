@@ -121,3 +121,22 @@ export async function removeDocument(key: string, collection = '_default') {
     throw new CouchbaseError(`Failed to remove document ${key}: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
+// Execute query helper
+export async function executeQuery(statement: string, params?: any[]): Promise<QueryResult> {
+  const { cluster } = await getCouchbaseConnection();
+  return cluster.query(statement, { parameters: params });
+}
+
+// Export couchbaseService for compatibility
+export const couchbaseService = {
+  get: getDocument,
+  upsert: upsertDocument,
+  remove: removeDocument,
+  query: executeQuery,
+  getCouchbaseConnection,
+  getCollection,
+  CouchbaseError
+};
+
+// Also export default couchbase object for RSVP router
+export const couchbase = couchbaseService;

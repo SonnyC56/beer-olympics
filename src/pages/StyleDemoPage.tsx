@@ -10,7 +10,7 @@ export default function StyleDemoPage() {
         <h1 className="font-beer text-6xl md:text-8xl text-glow animate-bounce-in">
           🍺 BEER OLYMPICS 🏆
         </h1>
-        <p className="font-party text-2xl text-shadow-party animate-party-float">
+        <p className="font-party text-2xl text-shadow-lg animate-party-float">
           Where legends are made and beers are won! 🎉
         </p>
       </div>
@@ -175,7 +175,7 @@ export default function StyleDemoPage() {
             p-8 rounded-3xl transition-all duration-500 cursor-pointer
             ${clicked 
               ? 'bg-gradient-victory shadow-victory animate-confetti' 
-              : 'bg-gradient-party shadow-party'
+              : 'bg-gradient-party shadow-lg'
             }
           `}
           onClick={() => setClicked(!clicked)}
@@ -191,7 +191,7 @@ export default function StyleDemoPage() {
 
       {/* Footer */}
       <div className="text-center space-y-2">
-        <p className="font-party text-lg text-shadow-party">
+        <p className="font-party text-lg text-shadow-lg">
           Made with 💖 and lots of ☕ for the ultimate Beer Olympics experience!
         </p>
         <div className="flex justify-center space-x-4 text-2xl animate-party-float">

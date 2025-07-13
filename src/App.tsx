@@ -1,22 +1,27 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './context/auth';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
-import { trpc, trpcClient, queryClient } from './utils/trpc';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import React from 'react';
+import { AuthProvider } from './context/auth';
+import { httpBatchLink } from '@trpc/client';
+import { trpc } from './utils/trpc';
 
 // Pages
 import { HomePage } from './pages/HomePage';
+import { CreateTournamentPage } from './pages/CreateTournamentPage';
 import { JoinPage } from './pages/JoinPage';
-import { DashboardPage } from './pages/DashboardPage';
 import { ControlRoomPage } from './pages/ControlRoomPage';
+import { DashboardPage } from './pages/DashboardPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
 import { DisplayPage } from './pages/DisplayPage';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { TestPage } from './pages/TestPage';
-import { CreateTournamentPage } from './pages/CreateTournamentPage';
-import StyleDemoPage from './pages/StyleDemoPage';
+import StyleGuide from './pages/StyleGuide';
+import RSVPPage from './pages/RSVPPage';
+import { RSVPManagementPage } from './pages/RSVPManagementPage';
+import TournamentManagePage from './pages/TournamentManagePage';
+import { AdminDashboard } from './pages/AdminDashboard';
 
 const pageVariants = {
   initial: {
@@ -60,27 +65,24 @@ const wrapWithLayout = (Component: React.ComponentType) => (
   </PageLayout>
 );
 
+// Create tRPC client
+const trpcClient = trpc.createClient({
+  links: [
+    httpBatchLink({
+      url: `${window.location.origin}/api/trpc`,
+    }),
+  ],
+});
 
-function AnimatedRoutes() {
-  const location = useLocation();
-
-  return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={wrapWithLayout(HomePage)} />
-        <Route path="/join/:slug" element={wrapWithLayout(JoinPage)} />
-        <Route path="/dashboard/:slug" element={wrapWithLayout(DashboardPage)} />
-        <Route path="/control/:slug" element={wrapWithLayout(ControlRoomPage)} />
-        <Route path="/leaderboard/:slug" element={wrapWithLayout(LeaderboardPage)} />
-        <Route path="/display/:slug" element={wrapWithLayout(DisplayPage)} />
-        <Route path="/auth/callback" element={wrapWithLayout(AuthCallbackPage)} />
-        <Route path="/test" element={wrapWithLayout(TestPage)} />
-        <Route path="/create" element={wrapWithLayout(CreateTournamentPage)} />
-        <Route path="/demo" element={wrapWithLayout(StyleDemoPage)} />
-      </Routes>
-    </AnimatePresence>
-  );
-}
+// Create React Query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 function App() {
   return (
@@ -89,7 +91,22 @@ function App() {
         <AuthProvider>
           <Router>
             <div className="min-h-screen">
-              <AnimatedRoutes />
+              <Routes>
+                <Route path="/" element={wrapWithLayout(HomePage)} />
+                <Route path="/create" element={wrapWithLayout(CreateTournamentPage)} />
+                <Route path="/join/:slug" element={wrapWithLayout(JoinPage)} />
+                <Route path="/control/:slug" element={wrapWithLayout(ControlRoomPage)} />
+                <Route path="/dashboard/:slug" element={wrapWithLayout(DashboardPage)} />
+                <Route path="/leaderboard/:slug" element={wrapWithLayout(LeaderboardPage)} />
+                <Route path="/display/:slug" element={wrapWithLayout(DisplayPage)} />
+                <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                <Route path="/test" element={wrapWithLayout(TestPage)} />
+                <Route path="/style-guide" element={wrapWithLayout(StyleGuide)} />
+                <Route path="/rsvp" element={wrapWithLayout(RSVPPage)} />
+                <Route path="/rsvp-management/:slug" element={wrapWithLayout(RSVPManagementPage)} />
+                <Route path="/manage/:slug" element={wrapWithLayout(TournamentManagePage)} />
+                <Route path="/admin/:slug" element={wrapWithLayout(AdminDashboard)} />
+              </Routes>
               <Toaster theme="dark" position="top-center" />
             </div>
           </Router>
