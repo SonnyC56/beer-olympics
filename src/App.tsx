@@ -6,6 +6,7 @@ import React from 'react';
 import { AuthProvider } from './context/auth';
 import { httpBatchLink } from '@trpc/client';
 import { trpc } from './utils/trpc';
+import { MaterialThemeProvider } from './components/ui/material-theme';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -22,6 +23,7 @@ import RSVPPage from './pages/RSVPPage';
 import { RSVPManagementPage } from './pages/RSVPManagementPage';
 import TournamentManagePage from './pages/TournamentManagePage';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { Material3Demo } from './pages/Material3Demo';
 
 const pageVariants = {
   initial: {
@@ -86,33 +88,36 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Router>
-            <div className="min-h-screen">
-              <Routes>
-                <Route path="/" element={wrapWithLayout(HomePage)} />
-                <Route path="/create" element={wrapWithLayout(CreateTournamentPage)} />
-                <Route path="/join/:slug" element={wrapWithLayout(JoinPage)} />
-                <Route path="/control/:slug" element={wrapWithLayout(ControlRoomPage)} />
-                <Route path="/dashboard/:slug" element={wrapWithLayout(DashboardPage)} />
-                <Route path="/leaderboard/:slug" element={wrapWithLayout(LeaderboardPage)} />
-                <Route path="/display/:slug" element={wrapWithLayout(DisplayPage)} />
-                <Route path="/auth/callback" element={<AuthCallbackPage />} />
-                <Route path="/test" element={wrapWithLayout(TestPage)} />
-                <Route path="/style-guide" element={wrapWithLayout(StyleGuide)} />
-                <Route path="/rsvp" element={wrapWithLayout(RSVPPage)} />
-                <Route path="/rsvp-management/:slug" element={wrapWithLayout(RSVPManagementPage)} />
-                <Route path="/manage/:slug" element={wrapWithLayout(TournamentManagePage)} />
-                <Route path="/admin/:slug" element={wrapWithLayout(AdminDashboard)} />
-              </Routes>
-              <Toaster theme="dark" position="top-center" />
-            </div>
-          </Router>
-        </AuthProvider>
-      </QueryClientProvider>
-    </trpc.Provider>
+    <MaterialThemeProvider>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <Router>
+              <div className="min-h-screen">
+                <Routes>
+                  <Route path="/" element={wrapWithLayout(HomePage)} />
+                  <Route path="/create" element={wrapWithLayout(CreateTournamentPage)} />
+                  <Route path="/join/:slug" element={wrapWithLayout(JoinPage)} />
+                  <Route path="/control/:slug" element={wrapWithLayout(ControlRoomPage)} />
+                  <Route path="/dashboard/:slug" element={wrapWithLayout(DashboardPage)} />
+                  <Route path="/leaderboard/:slug" element={wrapWithLayout(LeaderboardPage)} />
+                  <Route path="/display/:slug" element={wrapWithLayout(DisplayPage)} />
+                  <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                  <Route path="/test" element={wrapWithLayout(TestPage)} />
+                  <Route path="/style-guide" element={wrapWithLayout(StyleGuide)} />
+                  <Route path="/rsvp" element={wrapWithLayout(RSVPPage)} />
+                  <Route path="/rsvp-management/:slug" element={wrapWithLayout(RSVPManagementPage)} />
+                  <Route path="/manage/:slug" element={wrapWithLayout(TournamentManagePage)} />
+                  <Route path="/admin/:slug" element={wrapWithLayout(AdminDashboard)} />
+                  <Route path="/material3" element={wrapWithLayout(Material3Demo)} />
+                </Routes>
+                <Toaster theme="dark" position="top-center" />
+              </div>
+            </Router>
+          </AuthProvider>
+        </QueryClientProvider>
+      </trpc.Provider>
+    </MaterialThemeProvider>
   );
 }
 

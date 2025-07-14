@@ -1,35 +1,23 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "../../lib/utils"
+// Re-export Material 3 Chip component as Badge with compatibility
+import React, { forwardRef } from 'react';
+import { Chip, type ChipProps } from './material/chip';
 
-const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-  {
-    variants: {
-      variant: {
-        default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  }
-)
-
-export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {}
-
-function Badge({ className, variant, ...props }: BadgeProps) {
-  return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
-  )
+export interface BadgeProps extends Omit<ChipProps, 'variant' | 'removable' | 'onRemove' | 'selected' | 'onSelectedChange' | 'label'> {
+  variant?: 'default' | 'secondary' | 'destructive' | 'outline';
+  children?: React.ReactNode;
+  label?: string;
 }
 
-export { Badge, badgeVariants }
+export const Badge = forwardRef<HTMLElement, BadgeProps>(
+  ({ variant = 'default', children, label, ...props }, ref) => {
+    // Map old badge variants to chip styles
+    const chipVariant = variant === 'outline' ? 'assist' : 'filter';
+    
+    // Use children as label if label is not provided
+    const chipLabel = label || (typeof children === 'string' ? children : String(children));
+    
+    return <Chip ref={ref} variant={chipVariant} label={chipLabel} {...props} />;
+  }
+);
+
+Badge.displayName = 'Badge';

@@ -1,0 +1,274 @@
+/* Material 3 Custom Styles and Overrides */
+
+/* Import Material Symbols font */
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+/* Material 3 Color System Override - Beer Olympics Theme */
+:root {
+  /* Primary - Beer Orange */
+  --md-sys-color-primary: #FF6B35;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #FFE5DB;
+  --md-sys-color-on-primary-container: #3D1A0A;
+  
+  /* Secondary - Party Pink */
+  --md-sys-color-secondary: #FF1744;
+  --md-sys-color-on-secondary: #FFFFFF;
+  --md-sys-color-secondary-container: #FFE5E9;
+  --md-sys-color-on-secondary-container: #410510;
+  
+  /* Tertiary - Beer Gold */
+  --md-sys-color-tertiary: #FFD700;
+  --md-sys-color-on-tertiary: #1C1B00;
+  --md-sys-color-tertiary-container: #FFF8DC;
+  --md-sys-color-on-tertiary-container: #1C1B00;
+  
+  /* Error */
+  --md-sys-color-error: #DC2626;
+  --md-sys-color-on-error: #FFFFFF;
+  --md-sys-color-error-container: #FEE2E2;
+  --md-sys-color-on-error-container: #7F1D1D;
+  
+  /* Background */
+  --md-sys-color-background: #0A0E27;
+  --md-sys-color-on-background: #E2E2E9;
+  
+  /* Surface */
+  --md-sys-color-surface: #0F1329;
+  --md-sys-color-on-surface: #E2E2E9;
+  --md-sys-color-surface-variant: #1A1F3A;
+  --md-sys-color-on-surface-variant: #C5C6D0;
+  
+  /* Outline */
+  --md-sys-color-outline: #8F909A;
+  --md-sys-color-outline-variant: #45464F;
+  
+  /* Surface levels */
+  --md-sys-color-surface-container-lowest: #0A0E27;
+  --md-sys-color-surface-container-low: #0F1329;
+  --md-sys-color-surface-container: #141831;
+  --md-sys-color-surface-container-high: #1A1F3A;
+  --md-sys-color-surface-container-highest: #252A45;
+}
+
+/* Material 3 Button Overrides */
+md-filled-button {
+  --md-filled-button-container-color: var(--md-sys-color-primary);
+  --md-filled-button-label-text-color: var(--md-sys-color-on-primary);
+  font-family: 'Fredoka', 'Roboto', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+md-outlined-button {
+  --md-outlined-button-label-text-color: var(--md-sys-color-primary);
+  --md-outlined-button-outline-color: var(--md-sys-color-primary);
+  font-family: 'Fredoka', 'Roboto', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+md-text-button {
+  --md-text-button-label-text-color: var(--md-sys-color-primary);
+  font-family: 'Fredoka', 'Roboto', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+md-elevated-button {
+  --md-elevated-button-container-color: var(--md-sys-color-surface-container-high);
+  --md-elevated-button-label-text-color: var(--md-sys-color-primary);
+  font-family: 'Fredoka', 'Roboto', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+md-filled-tonal-button {
+  --md-filled-tonal-button-container-color: var(--md-sys-color-secondary-container);
+  --md-filled-tonal-button-label-text-color: var(--md-sys-color-on-secondary-container);
+  font-family: 'Fredoka', 'Roboto', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Material 3 Card Styles */
+.md-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.md-card-clickable:hover {
+  transform: translateY(-2px);
+  border-color: var(--md-sys-color-primary);
+}
+
+/* Material 3 Text Field Overrides */
+md-filled-text-field,
+md-outlined-text-field {
+  --md-filled-text-field-container-color: var(--md-sys-color-surface-container);
+  --md-outlined-text-field-outline-color: var(--md-sys-color-outline);
+  --md-filled-text-field-label-text-color: var(--md-sys-color-on-surface-variant);
+  --md-outlined-text-field-label-text-color: var(--md-sys-color-on-surface-variant);
+  --md-filled-text-field-input-text-color: var(--md-sys-color-on-surface);
+  --md-outlined-text-field-input-text-color: var(--md-sys-color-on-surface);
+  font-family: 'Nunito', 'Roboto', sans-serif;
+}
+
+/* Focus state */
+md-filled-text-field:focus-within,
+md-outlined-text-field:focus-within {
+  --md-filled-text-field-label-text-color: var(--md-sys-color-primary);
+  --md-outlined-text-field-label-text-color: var(--md-sys-color-primary);
+  --md-outlined-text-field-outline-color: var(--md-sys-color-primary);
+}
+
+/* Material 3 Dialog Overrides */
+md-dialog {
+  --md-dialog-container-color: var(--md-sys-color-surface-container-high);
+  --md-dialog-headline-color: var(--md-sys-color-on-surface);
+  --md-dialog-supporting-text-color: var(--md-sys-color-on-surface-variant);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Material 3 FAB Overrides */
+md-fab,
+md-branded-fab {
+  --md-fab-container-color: var(--md-sys-color-primary);
+  --md-fab-icon-color: var(--md-sys-color-on-primary);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+md-fab:hover,
+md-branded-fab:hover {
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+}
+
+/* Material 3 Chip Overrides */
+md-assist-chip,
+md-filter-chip,
+md-input-chip,
+md-suggestion-chip {
+  --md-assist-chip-container-color: var(--md-sys-color-surface-container-high);
+  --md-assist-chip-label-text-color: var(--md-sys-color-on-surface);
+  --md-filter-chip-selected-container-color: var(--md-sys-color-primary);
+  --md-filter-chip-selected-label-text-color: var(--md-sys-color-on-primary);
+  font-family: 'Nunito', 'Roboto', sans-serif;
+  font-weight: 600;
+}
+
+/* Material 3 Switch Overrides */
+md-switch {
+  --md-switch-selected-track-color: var(--md-sys-color-primary);
+  --md-switch-selected-handle-color: var(--md-sys-color-on-primary);
+  --md-switch-selected-icon-color: var(--md-sys-color-primary);
+}
+
+/* Material 3 Tabs Overrides */
+md-tabs {
+  --md-primary-tab-active-indicator-color: var(--md-sys-color-primary);
+  --md-primary-tab-active-label-text-color: var(--md-sys-color-primary);
+  --md-secondary-tab-active-indicator-color: var(--md-sys-color-secondary);
+  --md-secondary-tab-active-label-text-color: var(--md-sys-color-secondary);
+  font-family: 'Fredoka', 'Roboto', sans-serif;
+  font-weight: 500;
+}
+
+/* Material 3 Navigation Drawer Overrides */
+.md-navigation-drawer {
+  background: linear-gradient(180deg, var(--md-sys-color-surface) 0%, var(--md-sys-color-surface-container) 100%);
+}
+
+.md-navigation-drawer-scrim {
+  backdrop-filter: blur(4px);
+}
+
+md-list-item {
+  --md-list-item-label-text-color: var(--md-sys-color-on-surface);
+  --md-list-item-selected-container-color: var(--md-sys-color-primary-container);
+  --md-list-item-selected-label-text-color: var(--md-sys-color-on-primary-container);
+  font-family: 'Nunito', 'Roboto', sans-serif;
+  font-weight: 500;
+}
+
+/* Animations */
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Apply animations to Material components */
+md-filled-button,
+md-outlined-button,
+md-text-button,
+md-elevated-button,
+md-filled-tonal-button {
+  animation: bounce-in 0.3s ease-out;
+}
+
+.md-card {
+  animation: bounce-in 0.4s ease-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  md-filled-button,
+  md-outlined-button,
+  md-text-button,
+  md-elevated-button,
+  md-filled-tonal-button {
+    --md-filled-button-container-height: 48px;
+    --md-outlined-button-container-height: 48px;
+    --md-text-button-container-height: 48px;
+    --md-elevated-button-container-height: 48px;
+    --md-filled-tonal-button-container-height: 48px;
+  }
+}
+
+/* Utility classes for Material 3 */
+.md-surface {
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}
+
+.md-surface-container {
+  background-color: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+}
+
+.md-primary {
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+.md-secondary {
+  background-color: var(--md-sys-color-secondary);
+  color: var(--md-sys-color-on-secondary);
+}
+
+.md-elevation-1 {
+  box-shadow: var(--md-sys-elevation-1);
+}
+
+.md-elevation-2 {
+  box-shadow: var(--md-sys-elevation-2);
+}
+
+.md-elevation-3 {
+  box-shadow: var(--md-sys-elevation-3);
+}
