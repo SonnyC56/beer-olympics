@@ -1,5 +1,5 @@
-import { generateAuthUrl } from '../../src/services/auth';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { OAuth2Client } from 'google-auth-library';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Simple CORS headers for Vercel
@@ -37,8 +37,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
     
+    // Initialize OAuth2Client inside the handler
+    const redirectUri = `${process.env.AUTH_URL || 'http://localhost:5173'}/auth/callback`;
+    const client = new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      redirectUri
+    );
+    
     // Generate real Google OAuth URL
-    const authUrl = await generateAuthUrl();
+    const authUrl = client.generateAuthUrl({
+      access_type: 'offline',
+      scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email'],
+      prompt: 'consent',
+    });
+    
+    console.log('Generated OAuth URL:', authUrl);
     
     return res.status(200).json({
       url: authUrl
@@ -46,7 +60,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (error) {
     console.error('Error generating auth URL:', error);
     return res.status(500).json({
-      error: 'Failed to generate authentication URL'
+      error: 'Failed to generate authentication URL',
+      details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 }

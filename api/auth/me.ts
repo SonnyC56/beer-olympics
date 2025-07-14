@@ -1,11 +1,39 @@
-import { verifyJWT, parseAuthCookie } from '../../src/services/auth';
-import { applySecurityHeaders, applyCorsHeaders } from '../../src/utils/middleware';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import jwt from 'jsonwebtoken';
+
+// Parse auth cookie inline
+function parseAuthCookie(cookieString: string | undefined): string | null {
+  if (!cookieString) return null;
+  
+  const cookies = cookieString.split(';').map(c => c.trim());
+  const authCookie = cookies.find(c => c.startsWith('auth-token='));
+  
+  if (!authCookie) return null;
+  
+  return authCookie.split('=')[1];
+}
+
+// Verify JWT inline
+function verifyJWT(token: string): any | null {
+  try {
+    const decoded = jwt.verify(token, process.env.AUTH_SECRET!) as any;
+    return {
+      id: decoded.id,
+      email: decoded.email,
+      name: decoded.name,
+      image: decoded.image,
+    };
+  } catch (error) {
+    return null;
+  }
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Apply security headers
-  applySecurityHeaders(res);
-  applyCorsHeaders(res, req.headers.origin);
+  // Simple CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
