@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
-  <!-- Beer Olympics Logo -->
+  <!-- Beer Olympics Logo - 144x144 -->
   <rect width="144" height="144" rx="16" fill="#FF6B35"/>
   
   <!-- Beer Mug -->
@@ -22,5 +22,5 @@
   <ellipse cx="60" cy="48" rx="28" ry="6" fill="#FFF" opacity="0.9"/>
   
   <!-- Text -->
-  <text x="72" y="128" text-anchor="middle" font-family="Arial Black" font-size="10" font-weight="bold" fill="#FFF">BO</text>
+  <text x="72" y="128" text-anchor="middle" font-family="Arial Black" font-size="12" font-weight="bold" fill="#FFF">BO</text>
 </svg>

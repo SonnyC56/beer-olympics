@@ -2,6 +2,7 @@ import React, { forwardRef } from 'react';
 import '@material/web/fab/fab.js';
 import '@material/web/fab/branded-fab.js';
 import '@material/web/icon/icon.js';
+import { MaterialElements as ME } from './material-elements';
 
 export interface FABProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'tertiary' | 'surface';
@@ -78,20 +79,20 @@ const FAB = forwardRef<HTMLElement, FABProps>(
       },
     };
 
-    const iconElement = <md-icon slot="icon">{icon}</md-icon>;
+    const iconElement = <ME.Icon slot="icon">{icon}</ME.Icon>;
 
     if (branded) {
       return (
-        <md-branded-fab {...commonProps}>
+        <ME.BrandedFab {...commonProps}>
           {iconElement}
-        </md-branded-fab>
+        </ME.BrandedFab>
       );
     }
 
     return (
-      <md-fab {...commonProps}>
+      <ME.Fab {...commonProps}>
         {iconElement}
-      </md-fab>
+      </ME.Fab>
     );
   }
 );

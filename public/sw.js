@@ -1,6 +1,6 @@
-const CACHE_NAME = 'beer-olympics-v1';
-const STATIC_CACHE_NAME = 'beer-olympics-static-v1';
-const API_CACHE_NAME = 'beer-olympics-api-v1';
+const CACHE_NAME = 'beer-olympics-v2';
+const STATIC_CACHE_NAME = 'beer-olympics-static-v2';
+const API_CACHE_NAME = 'beer-olympics-api-v2';
 
 // URLs to cache when the SW is installed
 const STATIC_URLS = [

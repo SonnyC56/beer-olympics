@@ -5,6 +5,7 @@ import '@material/web/chips/filter-chip.js';
 import '@material/web/chips/input-chip.js';
 import '@material/web/chips/suggestion-chip.js';
 import '@material/web/icon/icon.js';
+import { MaterialElements as ME } from './material-elements';
 
 export interface ChipProps extends React.HTMLAttributes<HTMLElement> {
   variant?: 'assist' | 'filter' | 'input' | 'suggestion';
@@ -91,7 +92,7 @@ const Chip = forwardRef<HTMLElement, ChipProps>(
       ...props,
     };
 
-    const iconElement = icon && <md-icon slot="icon">{icon}</md-icon>;
+    const iconElement = icon && <ME.Icon slot="icon">{icon}</ME.Icon>;
     const avatarElement = avatar && (
       typeof avatar === 'string' ? (
         <img slot="icon" src={avatar} alt="" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
@@ -103,19 +104,19 @@ const Chip = forwardRef<HTMLElement, ChipProps>(
     switch (variant) {
       case 'filter':
         return (
-          <md-filter-chip
+          <ME.FilterChip
             {...commonProps}
             selected={selected}
             removable={removable}
           >
             {iconElement}
             {avatarElement}
-          </md-filter-chip>
+          </ME.FilterChip>
         );
       
       case 'input':
         return (
-          <md-input-chip
+          <ME.InputChip
             {...commonProps}
             selected={selected}
             avatar={!!avatar}
@@ -124,32 +125,32 @@ const Chip = forwardRef<HTMLElement, ChipProps>(
           >
             {iconElement}
             {avatarElement}
-          </md-input-chip>
+          </ME.InputChip>
         );
       
       case 'suggestion':
         return (
-          <md-suggestion-chip
+          <ME.SuggestionChip
             {...commonProps}
             href={href}
             target={target}
           >
             {iconElement}
             {avatarElement}
-          </md-suggestion-chip>
+          </ME.SuggestionChip>
         );
       
       case 'assist':
       default:
         return (
-          <md-assist-chip
+          <ME.AssistChip
             {...commonProps}
             href={href}
             target={target}
           >
             {iconElement}
             {avatarElement}
-          </md-assist-chip>
+          </ME.AssistChip>
         );
     }
   }
@@ -164,9 +165,9 @@ export interface ChipSetProps extends React.HTMLAttributes<HTMLElement> {
 const ChipSet = forwardRef<HTMLElement, ChipSetProps>(
   ({ children, className, ...props }, ref) => {
     return (
-      <md-chip-set ref={ref} className={className} {...props}>
+      <ME.ChipSet ref={ref} className={className} {...props}>
         {children}
-      </md-chip-set>
+      </ME.ChipSet>
     );
   }
 );

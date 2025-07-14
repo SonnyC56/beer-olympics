@@ -4,6 +4,7 @@ import '@material/web/tabs/primary-tab.js';
 import '@material/web/tabs/secondary-tab.js';
 import '@material/web/icon/icon.js';
 import { cn } from '@/lib/utils';
+import { MaterialElements as ME } from './material-elements';
 
 interface TabsContextValue {
   value: string;
@@ -78,7 +79,7 @@ const TabsList = forwardRef<HTMLElement, TabsListProps>(
     }, [context, elementRef, variant]);
 
     return (
-      <md-tabs
+      <ME.Tabs
         ref={elementRef}
         className={className}
         {...props}
@@ -92,7 +93,7 @@ const TabsList = forwardRef<HTMLElement, TabsListProps>(
           }
           return child;
         })}
-      </md-tabs>
+      </ME.Tabs>
     );
   }
 );
@@ -124,16 +125,16 @@ const TabsTrigger = forwardRef<HTMLElement, TabsTriggerProps>(
 
     const content = (
       <>
-        {icon && <md-icon slot="icon">{icon}</md-icon>}
+        {icon && <ME.Icon slot="icon">{icon}</ME.Icon>}
         {children}
       </>
     );
 
     if (variant === 'secondary') {
-      return <md-secondary-tab {...tabProps}>{content}</md-secondary-tab>;
+      return <ME.SecondaryTab {...tabProps}>{content}</ME.SecondaryTab>;
     }
 
-    return <md-primary-tab {...tabProps}>{content}</md-primary-tab>;
+    return <ME.PrimaryTab {...tabProps}>{content}</ME.PrimaryTab>;
   }
 );
 

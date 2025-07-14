@@ -1,6 +1,7 @@
 import React, { forwardRef, useEffect, useRef } from 'react';
 import '@material/web/switch/switch.js';
 import '@material/web/icon/icon.js';
+import { MaterialElements as ME } from './material-elements';
 
 export interface SwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size' | 'type'> {
   checked?: boolean;
@@ -54,7 +55,7 @@ const Switch = forwardRef<HTMLElement, SwitchProps>(
     }, [onCheckedChange, elementRef]);
 
     const switchElement = (
-      <md-switch
+      <ME.Switch
         ref={elementRef}
         selected={checked}
         disabled={disabled}
@@ -69,11 +70,11 @@ const Switch = forwardRef<HTMLElement, SwitchProps>(
       >
         {icons && (
           <>
-            <md-icon slot="on-icon">check</md-icon>
-            <md-icon slot="off-icon">close</md-icon>
+            <ME.Icon slot="on-icon">check</ME.Icon>
+            <ME.Icon slot="off-icon">close</ME.Icon>
           </>
         )}
-      </md-switch>
+      </ME.Switch>
     );
 
     if (label) {

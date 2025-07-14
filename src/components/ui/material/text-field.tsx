@@ -2,6 +2,7 @@ import React, { forwardRef, useEffect, useRef } from 'react';
 import '@material/web/textfield/filled-text-field.js';
 import '@material/web/textfield/outlined-text-field.js';
 import '@material/web/icon/icon.js';
+import { MaterialElements as ME } from './material-elements';
 
 export interface TextFieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size' | 'prefix'> {
   variant?: 'filled' | 'outlined';
@@ -120,23 +121,23 @@ const TextField = forwardRef<HTMLElement, TextFieldProps>(
 
     const content = (
       <>
-        {leadingIcon && <md-icon slot="leading-icon">{leadingIcon}</md-icon>}
-        {trailingIcon && <md-icon slot="trailing-icon">{trailingIcon}</md-icon>}
+        {leadingIcon && <ME.Icon slot="leading-icon">{leadingIcon}</ME.Icon>}
+        {trailingIcon && <ME.Icon slot="trailing-icon">{trailingIcon}</ME.Icon>}
       </>
     );
 
     if (variant === 'filled') {
       return (
-        <md-filled-text-field {...commonProps}>
+        <ME.FilledTextField {...commonProps}>
           {content}
-        </md-filled-text-field>
+        </ME.FilledTextField>
       );
     }
 
     return (
-      <md-outlined-text-field {...commonProps}>
+      <ME.OutlinedTextField {...commonProps}>
         {content}
-      </md-outlined-text-field>
+      </ME.OutlinedTextField>
     );
   }
 );

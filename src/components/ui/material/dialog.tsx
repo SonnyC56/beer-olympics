@@ -3,6 +3,7 @@ import '@material/web/dialog/dialog.js';
 import '@material/web/icon/icon.js';
 import '@material/web/iconbutton/icon-button.js';
 import { cn } from '@/lib/utils';
+import { MaterialElements as ME } from './material-elements';
 
 interface DialogContextValue {
   open: boolean;
@@ -105,7 +106,7 @@ const DialogContent = forwardRef<HTMLElement, DialogContentProps>(
     }, [context, elementRef]);
 
     return (
-      <md-dialog
+      <ME.Dialog
         ref={elementRef}
         type={type}
         no-focus-trap={noFocusTrap ? true : undefined}
@@ -113,7 +114,7 @@ const DialogContent = forwardRef<HTMLElement, DialogContentProps>(
         {...props}
       >
         {showCloseButton && (
-          <md-icon-button
+          <ME.IconButton
             slot="headline"
             aria-label="Close dialog"
             onClick={() => context.setOpen(false)}
@@ -123,11 +124,11 @@ const DialogContent = forwardRef<HTMLElement, DialogContentProps>(
               top: '16px',
             }}
           >
-            <md-icon>close</md-icon>
-          </md-icon-button>
+            <ME.Icon>close</ME.Icon>
+          </ME.IconButton>
         )}
         {children}
-      </md-dialog>
+      </ME.Dialog>
     );
   }
 );

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 72 72">
+  <!-- Beer Olympics Logo - 72x72 -->
+  <rect width="72" height="72" rx="8" fill="#FF6B35"/>
+  
+  <!-- Beer Mug -->
+  <rect x="18" y="24" width="24" height="30" rx="4" fill="#FFD700" stroke="#FF1744" stroke-width="1"/>
+  <rect x="16" y="26" width="28" height="4" rx="2" fill="#FFF" opacity="0.8"/>
+  
+  <!-- Handle -->
+  <path d="M42 30 Q48 30 48 36 Q48 42 42 42" stroke="#FFD700" stroke-width="2" fill="none"/>
+  
+  <!-- Olympic Rings (simplified) -->
+  <circle cx="24" cy="12" r="3" stroke="#0081C8" stroke-width="1" fill="none"/>
+  <circle cx="32" cy="12" r="3" stroke="#FCB131" stroke-width="1" fill="none"/>
+  <circle cx="40" cy="12" r="3" stroke="#00A651" stroke-width="1" fill="none"/>
+  <circle cx="48" cy="12" r="3" stroke="#EE334E" stroke-width="1" fill="none"/>
+  
+  <!-- Foam -->
+  <ellipse cx="30" cy="24" rx="14" ry="3" fill="#FFF" opacity="0.9"/>
+  
+  <!-- Text -->
+  <text x="36" y="64" text-anchor="middle" font-family="Arial Black" font-size="8" font-weight="bold" fill="#FFF">BO</text>
+</svg>

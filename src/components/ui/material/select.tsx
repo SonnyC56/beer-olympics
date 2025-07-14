@@ -3,6 +3,7 @@ import '@material/web/select/filled-select.js';
 import '@material/web/select/outlined-select.js';
 import '@material/web/select/select-option.js';
 import '@material/web/icon/icon.js';
+import { MaterialElements as ME } from './material-elements';
 
 export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   variant?: 'filled' | 'outlined';
@@ -77,28 +78,28 @@ const Select = forwardRef<HTMLElement, SelectProps>(
     };
 
     const optionElements = options.map((option) => (
-      <md-select-option
+      <ME.SelectOption
         key={option.value}
         value={option.value}
         disabled={option.disabled}
         selected={option.value === value}
       >
         {option.label}
-      </md-select-option>
+      </ME.SelectOption>
     ));
 
     if (variant === 'filled') {
       return (
-        <md-filled-select {...commonProps}>
+        <ME.FilledSelect {...commonProps}>
           {optionElements}
-        </md-filled-select>
+        </ME.FilledSelect>
       );
     }
 
     return (
-      <md-outlined-select {...commonProps}>
+      <ME.OutlinedSelect {...commonProps}>
         {optionElements}
-      </md-outlined-select>
+      </ME.OutlinedSelect>
     );
   }
 );

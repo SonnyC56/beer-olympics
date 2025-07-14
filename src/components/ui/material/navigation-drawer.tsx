@@ -4,6 +4,7 @@ import '@material/web/list/list-item.js';
 import '@material/web/icon/icon.js';
 import '@material/web/ripple/ripple.js';
 import { cn } from '@/lib/utils';
+import { MaterialElements as ME } from './material-elements';
 
 export interface NavigationDrawerProps extends React.HTMLAttributes<HTMLDivElement> {
   open?: boolean;
@@ -152,7 +153,7 @@ const NavigationItem = forwardRef<HTMLElement, NavigationItemProps>(
     };
 
     return (
-      <md-list-item
+      <ME.ListItem
         ref={ref}
         disabled={disabled}
         type={href ? 'link' : 'button'}
@@ -167,7 +168,7 @@ const NavigationItem = forwardRef<HTMLElement, NavigationItemProps>(
         }}
         {...props}
       >
-        {icon && <md-icon slot="start">{icon}</md-icon>}
+        {icon && <ME.Icon slot="start">{icon}</ME.Icon>}
         <span>{label}</span>
         {badge !== undefined && (
           <span
@@ -186,8 +187,8 @@ const NavigationItem = forwardRef<HTMLElement, NavigationItemProps>(
             {badge}
           </span>
         )}
-        <md-ripple />
-      </md-list-item>
+        <ME.Ripple />
+      </ME.ListItem>
     );
   }
 );
@@ -225,9 +226,9 @@ const NavigationSection = forwardRef<HTMLDivElement, NavigationSectionProps>(
           {title}
         </div>
       )}
-      <md-list>
+      <ME.List>
         {children}
-      </md-list>
+      </ME.List>
     </div>
   )
 );
