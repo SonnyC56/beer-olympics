@@ -12,13 +12,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   
   try {
-    console.log('Auth env check:', {
+    // Enhanced debugging
+    const envCheck = {
       hasGoogleId: !!process.env.GOOGLE_CLIENT_ID,
       hasGoogleSecret: !!process.env.GOOGLE_CLIENT_SECRET,
       hasAuthSecret: !!process.env.AUTH_SECRET,
       authUrl: process.env.AUTH_URL,
-      nodeEnv: process.env.NODE_ENV
-    });
+      nodeEnv: process.env.NODE_ENV,
+      googleIdLength: process.env.GOOGLE_CLIENT_ID?.length || 0,
+      googleSecretLength: process.env.GOOGLE_CLIENT_SECRET?.length || 0,
+      allEnvKeys: Object.keys(process.env).filter(k => k.includes('GOOGLE') || k.includes('AUTH'))
+    };
+    
+    console.log('Auth env check:', envCheck);
     
     // If we're in development without Google OAuth configured, use mock auth
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
@@ -39,24 +45,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     // Initialize OAuth2Client inside the handler
     const redirectUri = `${process.env.AUTH_URL || 'http://localhost:5173'}/auth/callback`;
-    const client = new OAuth2Client(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET,
-      redirectUri
-    );
     
-    // Generate real Google OAuth URL
-    const authUrl = client.generateAuthUrl({
-      access_type: 'offline',
-      scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email'],
-      prompt: 'consent',
+    console.log('Attempting to create OAuth client with:', {
+      clientIdSet: !!process.env.GOOGLE_CLIENT_ID,
+      clientSecretSet: !!process.env.GOOGLE_CLIENT_SECRET,
+      redirectUri: redirectUri
     });
     
-    console.log('Generated OAuth URL:', authUrl);
-    
-    return res.status(200).json({
-      url: authUrl
-    });
+    try {
+      const client = new OAuth2Client(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET,
+        redirectUri
+      );
+      
+      // Generate real Google OAuth URL
+      const authUrl = client.generateAuthUrl({
+        access_type: 'offline',
+        scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email'],
+        prompt: 'consent',
+      });
+      
+      console.log('Successfully generated OAuth URL');
+      
+      return res.status(200).json({
+        url: authUrl
+      });
+    } catch (oauthError) {
+      console.error('OAuth2Client error:', oauthError);
+      throw new Error(`OAuth initialization failed: ${oauthError instanceof Error ? oauthError.message : 'Unknown error'}`);
+    }
   } catch (error) {
     console.error('Error generating auth URL:', error);
     return res.status(500).json({
