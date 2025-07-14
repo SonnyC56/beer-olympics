@@ -26,20 +26,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     console.log('Auth env check:', envCheck);
     
-    // If we're in development without Google OAuth configured, use mock auth
+    // Check for required environment variables
     if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-      const redirectUrl = new URL(process.env.AUTH_URL || 'http://localhost:5173');
-      redirectUrl.pathname = '/auth/callback';
-      redirectUrl.searchParams.set('token', 'mock-token-' + Date.now());
-      redirectUrl.searchParams.set('user', JSON.stringify({
-        id: 'google-user-' + Math.random().toString(36).substring(2, 11),
-        email: 'player@gmail.com',
-        name: 'Google User',
-        image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + Date.now()
-      }));
+      // In development, use mock auth
+      if (process.env.NODE_ENV !== 'production' || process.env.AUTH_URL?.includes('localhost')) {
+        const redirectUrl = new URL(process.env.AUTH_URL || 'http://localhost:5173');
+        redirectUrl.pathname = '/auth/callback';
+        redirectUrl.searchParams.set('token', 'mock-token-' + Date.now());
+        redirectUrl.searchParams.set('user', JSON.stringify({
+          id: 'google-user-' + Math.random().toString(36).substring(2, 11),
+          email: 'player@gmail.com',
+          name: 'Google User',
+          image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + Date.now()
+        }));
+        
+        return res.status(200).json({
+          url: redirectUrl.toString()
+        });
+      }
       
-      return res.status(200).json({
-        url: redirectUrl.toString()
+      // In production, return a clear error
+      console.error('Missing Google OAuth credentials in production');
+      return res.status(500).json({
+        error: 'Authentication configuration error',
+        details: 'Google OAuth credentials are not configured. Please contact the administrator.',
+        debug: process.env.NODE_ENV !== 'production' ? envCheck : undefined
       });
     }
     
@@ -73,6 +84,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     } catch (oauthError) {
       console.error('OAuth2Client error:', oauthError);
+      console.error('OAuth error details:', {
+        hasClientId: !!process.env.GOOGLE_CLIENT_ID,
+        hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+        redirectUri: redirectUri,
+        error: oauthError instanceof Error ? oauthError.message : 'Unknown error'
+      });
       throw new Error(`OAuth initialization failed: ${oauthError instanceof Error ? oauthError.message : 'Unknown error'}`);
     }
   } catch (error) {
