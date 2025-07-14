@@ -53,17 +53,17 @@ const TextField = forwardRef<HTMLElement, TextFieldProps>(
     max,
     step,
     multiple,
-    ...props 
+    ...restProps 
   }, ref) => {
     const internalRef = useRef<HTMLElement>(null);
-    const elementRef = (ref as any) || internalRef;
+    const elementRef = (ref as React.RefObject<HTMLElement>) || internalRef;
 
     useEffect(() => {
       const element = elementRef.current;
       if (element) {
         const handleInput = (e: Event) => {
           if (onChange) {
-            const target = e.target as any;
+            const target = e.target as HTMLInputElement;
             const syntheticEvent = {
               target: {
                 value: target.value,
@@ -117,6 +117,7 @@ const TextField = forwardRef<HTMLElement, TextFieldProps>(
         width: fullWidth ? '100%' : undefined,
         ...style,
       },
+      ...restProps,
     };
 
     const content = (
