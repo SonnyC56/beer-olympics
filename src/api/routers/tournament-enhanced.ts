@@ -501,10 +501,14 @@ export const enhancedTournamentRouter = router({
           settings: {
             megaTournamentScoring: {
               method: input.megaScoringMethod,
-              placementPoints: input.subTournaments[0]?.pointsForPlacement || { 1: 100, 2: 75, 3: 50, 4: 25 },
+              placementPoints: input.subTournaments[0]?.pointsForPlacement 
+                ? Object.fromEntries(
+                    Object.entries(input.subTournaments[0].pointsForPlacement).map(([k, v]) => [Number(k), v])
+                  )
+                : { 1: 100, 2: 75, 3: 50, 4: 25 },
               bonusPointsEnabled: !!input.bonusChallenges?.length
             },
-            bonusChallenges: input.bonusChallenges
+            bonusChallenges: input.bonusChallenges || []
           },
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -547,8 +551,13 @@ export const enhancedTournamentRouter = router({
         await upsertDocument(`tournament::${megaSlug}`, megaTournament);
         
         return { 
-          megaTournamentSlug: megaSlug,
-          subTournamentSlugs 
+          megaTournament: megaTournament,
+          subTournaments: subTournamentSlugs.map((slug, index) => ({
+            slug,
+            name: input.subTournaments[index].name,
+            format: input.subTournaments[index].format,
+            maxTeams: input.subTournaments[index].maxTeams,
+          }))
         };
       } catch (error) {
         throw new TRPCError({
