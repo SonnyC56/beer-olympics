@@ -29,11 +29,17 @@ function verifyJWT(token: string): any | null {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Simple CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // CORS headers with specific origin for credentials
+  const origin = req.headers.origin || 'https://www.beerlympics.io';
+  const allowedOrigins = ['https://www.beerlympics.io', 'https://beerlympics.io', 'http://localhost:5173', 'http://localhost:3000'];
+  
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+  
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
   
   if (req.method === 'OPTIONS') {
     return res.status(200).end();

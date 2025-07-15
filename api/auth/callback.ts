@@ -95,13 +95,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const token = generateJWT(user);
     
     // Set HTTP-only cookie
-    const cookie = serialize('auth-token', token, {
+    const cookieOptions: any = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
-    });
+    };
+    
+    // In production, set the domain to allow subdomain access
+    if (process.env.NODE_ENV === 'production' && process.env.AUTH_URL) {
+      const url = new URL(process.env.AUTH_URL);
+      // Use .beerlympics.io to work with both www and non-www
+      cookieOptions.domain = url.hostname.replace('www.', '.');
+    }
+    
+    const cookie = serialize('auth-token', token, cookieOptions);
     
     res.setHeader('Set-Cookie', cookie);
     
