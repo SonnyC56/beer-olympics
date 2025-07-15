@@ -1,16 +1,7 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { createTRPCMsw } from 'msw-trpc';
-import { setupServer } from 'msw/node';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest';
 import type { AppRouter } from '@/api/routers';
 import { appRouter } from '@/api/routers';
-import superjson from 'superjson';
-
-// Create a test client
-const trpcMsw = createTRPCMsw<AppRouter>({
-  transformer: superjson,
-});
-
-const server = setupServer();
+import './setup';
 
 // Mock user for authenticated endpoints
 const mockUser = {
@@ -26,10 +17,6 @@ const mockContext = {
   req: {} as any,
   res: {} as any,
 };
-
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
 
 describe('API Endpoints Test Suite', () => {
   describe('Auth Endpoints', () => {

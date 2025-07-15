@@ -3,9 +3,7 @@ import { AuthEnhancedService } from '../../../src/services/auth-enhanced';
 
 // Mock QRCode module
 vi.mock('qrcode', () => ({
-  default: {
-    toDataURL: vi.fn().mockResolvedValue('data:image/png;base64,mockqrcode'),
-  },
+  toDataURL: vi.fn().mockResolvedValue('data:image/png;base64,mockqrcode'),
 }));
 
 // Mock nanoid

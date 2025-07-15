@@ -1,8 +1,10 @@
 import { vi } from 'vitest';
 import type { User } from '@/types';
 
-// Mock Couchbase operations
-vi.mock('@/services/couchbase', () => ({
+// Must be hoisted to work properly
+vi.hoisted(() => {
+  // Mock Couchbase operations
+  vi.mock('@/services/couchbase', () => ({
   getCouchbaseConnection: vi.fn().mockResolvedValue({
     cluster: {},
     bucket: {},
@@ -45,6 +47,7 @@ vi.mock('@/services/auth', () => ({
   verifyGoogleToken: vi.fn(),
   generateAuthUrl: vi.fn().mockResolvedValue('https://accounts.google.com/mock'),
 }));
+});
 
 // Mock environment variables
 process.env.COUCHBASE_BUCKET = 'test_bucket';
