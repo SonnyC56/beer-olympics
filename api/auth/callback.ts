@@ -116,9 +116,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     
     // Redirect to dashboard or original destination
     const redirectTo = req.query.state || '/';
-    return res.redirect(302, `${process.env.VITE_APP_URL}${redirectTo}`);
+    const frontendUrl = process.env.VITE_APP_URL || process.env.AUTH_URL || 'https://www.beerlympics.io';
+    return res.redirect(302, `${frontendUrl}${redirectTo}`);
   } catch (error) {
     console.error('OAuth callback error:', error);
-    return res.redirect(302, `${process.env.VITE_APP_URL}/?auth_error=callback_failed`);
+    const frontendUrl = process.env.VITE_APP_URL || process.env.AUTH_URL || 'https://www.beerlympics.io';
+    return res.redirect(302, `${frontendUrl}/?auth_error=callback_failed`);
   }
 }
