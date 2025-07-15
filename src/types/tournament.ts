@@ -221,6 +221,31 @@ export interface StandingEntry {
   winPercentage: number;
   isEliminated?: boolean;
   advancesToNext?: boolean;
+  // Swiss-specific tiebreakers
+  buchholz?: number;
+  sonnebornBerger?: number;
+}
+
+// Legacy compatibility
+export interface Team {
+  id: string;
+  name: string;
+  players?: string[];
+  colorHex?: string;
+  flagCode?: string;
+}
+
+export interface Standing {
+  teamId: string;
+  position: number;
+  wins: number;
+  losses: number;
+  draws?: number;
+  points: number;
+  gamesPlayed: number;
+  buchholz?: number;
+  sonnebornBerger?: number;
+  headToHead?: { [opponentId: string]: number };
 }
 
 // Tournament statistics
@@ -329,6 +354,14 @@ export interface MastersConfig extends TournamentConfig {
   maxRounds: number; // Maximum number of rounds
 }
 
+export interface SwissConfig extends TournamentConfig {
+  format: 'swiss';
+  maxRounds?: number; // Number of rounds (auto-calculated if not specified)
+  tiebreakers?: SwissTiebreaker[];
+}
+
+export type SwissTiebreaker = 'buchholz' | 'sonneborn_berger' | 'head_to_head' | 'wins' | 'random';
+
 // Utility types
 export type TournamentConfigByFormat<T extends TournamentFormat> = 
   T extends 'single_elimination' ? SingleEliminationConfig :
@@ -337,6 +370,7 @@ export type TournamentConfigByFormat<T extends TournamentFormat> =
   T extends 'group_stage' ? GroupStageConfig :
   T extends 'free_for_all' ? FFAConfig :
   T extends 'masters' ? MastersConfig :
+  T extends 'swiss' ? SwissConfig :
   TournamentConfig;
 
 // Tournament phase tracking

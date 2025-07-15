@@ -11,11 +11,11 @@ import { TRPCError } from '@trpc/server';
 //   total: number;
 // }
 
-interface TeamStatsRow {
+type TeamStatsRow = {
   eventName: string;
   points: number;
   entries: number;
-}
+};
 
 export const leaderboardRouter = router({
   list: publicProcedure

@@ -272,3 +272,34 @@ md-filled-tonal-button {
 .md-elevation-3 {
   box-shadow: var(--md-sys-elevation-3);
 }
+
+/* Medal container styles for leaderboard */
+.material-gold-container {
+  background: linear-gradient(135deg, 
+    rgba(var(--md-sys-color-primary-rgb), 0.15),
+    rgba(255, 193, 7, 0.15)
+  );
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.material-silver-container {
+  background: linear-gradient(135deg, 
+    rgba(var(--md-sys-color-secondary-rgb), 0.1),
+    rgba(158, 158, 158, 0.15)
+  );
+  border: 1px solid rgba(158, 158, 158, 0.3);
+}
+
+.material-bronze-container {
+  background: linear-gradient(135deg, 
+    rgba(var(--md-sys-color-tertiary-rgb), 0.1),
+    rgba(205, 127, 50, 0.15)
+  );
+  border: 1px solid rgba(205, 127, 50, 0.3);
+}
+
+/* Badge styles */
+.material-badge-new {
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}

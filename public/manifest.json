@@ -1,43 +1,101 @@
 {
-  "name": "Beer Olympics",
+  "name": "Beer Olympics Tournament",
   "short_name": "Beer Olympics",
-  "description": "Tournament management for Beer Olympics events",
+  "description": "Tournament management for Beer Olympics events - track scores, view leaderboards, and compete with friends",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#ff1493",
-  "theme_color": "#ff1493",
+  "orientation": "portrait",
+  "background_color": "#1e40af",
+  "theme_color": "#1e40af",
   "icons": [
     {
       "src": "/icons/icon-72x72.svg",
       "sizes": "72x72",
       "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
       "src": "/icons/icon-144x144.svg",
       "sizes": "144x144",
       "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
       "src": "/icons/icon.svg",
-      "sizes": "144x144",
+      "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any"
     }
   ],
-  "categories": ["sports", "entertainment", "games"],
+  "categories": ["sports", "entertainment", "games", "social"],
   "screenshots": [
     {
       "src": "/screenshots/mobile-1.png",
       "sizes": "640x1136",
-      "type": "image/png"
+      "type": "image/png",
+      "label": "Player Dashboard"
+    },
+    {
+      "src": "/screenshots/mobile-2.png",
+      "sizes": "640x1136",
+      "type": "image/png",
+      "label": "Score Entry"
+    },
+    {
+      "src": "/screenshots/mobile-3.png",
+      "sizes": "640x1136",
+      "type": "image/png",
+      "label": "Leaderboard"
     },
     {
       "src": "/screenshots/desktop-1.png",
       "sizes": "1280x720",
-      "type": "image/png"
+      "type": "image/png",
+      "label": "Tournament Control"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Submit Score",
+      "short_name": "Score",
+      "description": "Quick score submission",
+      "url": "/dashboard?action=submit-score",
+      "icons": [{ "src": "/icons/icon-72x72.png", "sizes": "72x72" }]
+    },
+    {
+      "name": "Leaderboard",
+      "short_name": "Rankings",
+      "description": "View current standings",
+      "url": "/leaderboard",
+      "icons": [{ "src": "/icons/icon-72x72.png", "sizes": "72x72" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "share_target": {
+    "action": "/share",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "features": [
+    "offline-capable",
+    "push-notifications",
+    "background-sync"
   ]
 }

@@ -1,4 +1,7 @@
 import { EventEmitter } from 'events';
+import { WebSocketConnectionPool } from './websocket-manager';
+import { MessageQueue, MessageDeduplicator, QueuedMessage } from '../utils/websocket-queue';
+import { RoomManager, TournamentRoomManager } from './websocket-rooms';
 
 // Enhanced real-time service with WebSocket fallback and advanced features
 export interface EnhancedRealtimeService extends RealtimeService {
@@ -195,7 +198,7 @@ export interface TournamentEvents {
 }
 
 // Base implementation with connection management
-abstract class BaseRealtimeService extends EventEmitter implements EnhancedRealtimeService {
+export abstract class BaseRealtimeService extends EventEmitter implements EnhancedRealtimeService {
   protected connectionState: ConnectionState = {
     state: 'disconnected',
     retryCount: 0,
@@ -517,16 +520,59 @@ class EnhancedPusherService extends BaseRealtimeService {
   }
 }
 
-// WebSocket fallback implementation
-class WebSocketRealtimeService extends BaseRealtimeService {
-  private ws: WebSocket | null = null;
+// Enhanced WebSocket implementation with connection pooling and advanced features
+class EnhancedWebSocketService extends BaseRealtimeService {
+  private connectionPool: WebSocketConnectionPool | null = null;
+  private messageQueue: MessageQueue;
+  private deduplicator: MessageDeduplicator;
+  private roomManager: RoomManager;
+  private tournamentRoomManager: TournamentRoomManager;
   private channels = new Map<string, Set<{ event: string; callback: Function }>>();
   private reconnectTimer?: NodeJS.Timeout;
+  private endpoints: string[];
+  private ws?: WebSocket;
   private pingInterval?: NodeJS.Timeout;
-  private messageQueue: Array<{ channel: string; event: string; data: any }> = [];
+  
+  constructor() {
+    super();
+    
+    // Initialize components
+    this.messageQueue = new MessageQueue({
+      maxSize: 5000,
+      maxRetries: 5,
+      persistenceKey: 'beer-olympics-queue',
+    });
+    
+    this.deduplicator = new MessageDeduplicator(30000); // 30s TTL
+    this.roomManager = new RoomManager();
+    this.tournamentRoomManager = new TournamentRoomManager(this.roomManager);
+    
+    // Configure endpoints
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const baseUrl = import.meta.env.VITE_WS_URL || `${wsProtocol}//${window.location.host}`;
+    
+    // Multiple endpoints for load balancing
+    this.endpoints = [
+      `${baseUrl}/ws`,
+      `${baseUrl}/ws-secondary`,
+      `${baseUrl}/ws-tertiary`,
+    ].filter(url => url.startsWith('ws')); // Filter valid URLs
+    
+    // Setup message queue processing
+    this.setupQueueProcessing();
+  }
+  
+  private setupQueueProcessing(): void {
+    // Process queued messages periodically
+    setInterval(() => {
+      if (this.isConnected()) {
+        this.flushMessageQueue();
+      }
+    }, 1000);
+  }
   
   async connect(): Promise<void> {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) return;
+    if (this.connectionPool) return;
     
     this.updateConnectionState('connecting');
     
@@ -577,7 +623,7 @@ class WebSocketRealtimeService extends BaseRealtimeService {
     if (this.ws) {
       this.updateConnectionState('disconnecting');
       this.ws.close();
-      this.ws = null;
+      this.ws = undefined;
       this.channels.clear();
     }
   }
@@ -719,24 +765,36 @@ class WebSocketRealtimeService extends BaseRealtimeService {
     } else {
       // Queue message for later
       if (message.type === 'message') {
-        this.messageQueue.push({
+        this.messageQueue.enqueue({
           channel: message.channel,
           event: message.event,
           data: message.data,
+          priority: 'normal'
         });
       }
     }
   }
   
   private flushMessageQueue() {
-    while (this.messageQueue.length > 0) {
-      const msg = this.messageQueue.shift()!;
-      this.sendMessage({
-        type: 'message',
-        channel: msg.channel,
-        event: msg.event,
-        data: msg.data,
-      });
+    // Process messages from the message queue
+    const messages = this.messageQueue.getNextBatch();
+    const sentIds: string[] = [];
+    
+    messages.forEach((msg: QueuedMessage) => {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify({
+          type: 'message',
+          channel: msg.channel,
+          event: msg.event,
+          data: msg.data,
+        }));
+        sentIds.push(msg.id);
+      }
+    });
+    
+    // Mark messages as sent
+    if (sentIds.length > 0) {
+      this.messageQueue.markAsSent(sentIds);
     }
   }
   
@@ -769,20 +827,23 @@ function createEnhancedRealtimeService(): EnhancedRealtimeService {
   const wantsRealtime = import.meta.env.VITE_ENABLE_REALTIME !== 'false';
   const pusherConfigured = !!(import.meta.env.VITE_PUSHER_KEY);
   const wsConfigured = !!(import.meta.env.VITE_WS_URL || true); // Always available as fallback
+  const scalableEnabled = import.meta.env.VITE_ENABLE_SCALABLE_WS === 'true';
   
   if (!wantsRealtime) {
     console.log('📱 Real-time features disabled');
     return new MockEnhancedRealtimeService();
   }
   
+  // Use scalable WebSocket service if enabled
+  if (scalableEnabled || wsConfigured) {
+    console.log('⚡ Using Scalable WebSocket service for 100+ connections');
+    // Dynamically import to avoid circular dependency
+    return new (require('./realtime-scalable').ScalableWebSocketService)();
+  }
+  
   if (pusherConfigured) {
     console.log('🚀 Using Enhanced Pusher for real-time features');
     return new EnhancedPusherService();
-  }
-  
-  if (wsConfigured) {
-    console.log('🔌 Using WebSocket fallback for real-time features');
-    return new WebSocketRealtimeService();
   }
   
   console.log('📱 Using mock real-time service');

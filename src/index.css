@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700;800;900&family=Bungee:wght@400&display=swap');
 @import "./styles/material3.css";
+@import "./styles/material-theme.css";
+@import "./styles/motion.css";
 
 @layer base {
   :root {

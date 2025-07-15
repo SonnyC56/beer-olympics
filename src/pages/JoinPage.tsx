@@ -5,6 +5,7 @@ import { Users, Flag, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { TextField } from '@mui/material';
 import { useAuth } from '@/context/auth';
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -193,11 +194,13 @@ export function JoinPage() {
                 <Users className="w-4 h-4 text-amber-400" />
                 Team Name
               </label>
-              <Input
+              <TextField
+                label="Team Name"
                 placeholder="Enter team name"
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
-                className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:bg-white/20"
+                fullWidth
+                variant="outlined"
               />
             </motion.div>
 
@@ -218,16 +221,16 @@ export function JoinPage() {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setSelectedColor(color)}
-                    className={`h-14 rounded-xl transition-all shadow-lg ${
+                    className={`h-14 rounded-xl material-motion-standard shadow-lg ${
                       selectedColor.hex === color.hex
-                        ? 'ring-3 ring-amber-400 ring-offset-2 ring-offset-gray-900'
+                        ? 'ring-3 ring-primary ring-offset-2 ring-offset-surface'
                         : 'hover:scale-105'
                     }`}
                     style={{ 
                       backgroundColor: color.hex,
                       boxShadow: selectedColor.hex === color.hex 
-                        ? `0 0 20px ${color.hex}40` 
-                        : `0 4px 12px ${color.hex}30`
+                        ? `var(--md-sys-elevation-level3)` 
+                        : `var(--md-sys-elevation-level1)`
                     }}
                   />
                 ))}
@@ -251,10 +254,10 @@ export function JoinPage() {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setSelectedFlag(flag)}
-                    className={`text-2xl p-3 rounded-xl transition-all ${
+                    className={`text-2xl p-3 rounded-xl material-motion-standard ${
                       selectedFlag === flag
-                        ? 'bg-amber-500/20 ring-2 ring-amber-400 shadow-lg'
-                        : 'bg-white/5 hover:bg-white/10'
+                        ? 'material-primary-container ring-2 ring-primary shadow-lg'
+                        : 'material-surface-variant hover:material-surface-container'
                     }`}
                   >
                     {flag}
@@ -270,30 +273,32 @@ export function JoinPage() {
               className="space-y-4"
             >
               {user && (
-                <div className="p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20">
+                <Card variant="outlined" className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-green-400">Signed in as:</p>
-                      <p className="font-medium text-white truncate">{user.name}</p>
+                      <p className="material-label-medium material-on-surface-variant">Signed in as:</p>
+                      <p className="material-title-medium truncate">{user.name}</p>
                     </div>
                     <Button
-                      variant="ghost"
+                      variant="text"
                       onClick={signOut}
-                      size="sm"
-                      className="text-green-400 hover:bg-green-500/10"
+                      size="small"
+                      leadingIcon="logout"
                     >
                       Sign Out
                     </Button>
                   </div>
-                </div>
+                </Card>
               )}
               
               <div className="flex gap-3">
                 {!user && (
                   <Button
-                    variant="outline"
+                    variant="outlined"
                     onClick={() => signIn()}
-                    className="flex-1 h-12 border-white/30 text-white hover:bg-white/10"
+                    size="large"
+                    className="flex-1"
+                    leadingIcon="login"
                   >
                     Sign In
                   </Button>
@@ -301,8 +306,10 @@ export function JoinPage() {
                 <Button
                   onClick={handleJoin}
                   disabled={isJoining}
-                  className={`h-12 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold shadow-lg ${!user ? 'flex-1' : 'w-full'}`}
-                  size="lg"
+                  variant="filled"
+                  size="large"
+                  className={`material-motion-standard ${!user ? 'flex-1' : 'w-full'}`}
+                  leadingIcon={isJoining ? "" : "group_add"}
                 >
                   {isJoining ? (
                     <div className="flex items-center gap-2">

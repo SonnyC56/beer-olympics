@@ -1,0 +1,556 @@
+/* ================================================================
+   Material Design 3 Motion System - Beer Olympics Edition
+   ================================================================
+   Complete motion principles with fun party animations
+   ================================================================ */
+
+/* ================================================================
+   1. MATERIAL MOTION CLASSES
+   ================================================================ */
+
+/* Fade transitions */
+.motion-fade-in {
+  animation: motion-fade-in var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard) both;
+}
+
+.motion-fade-out {
+  animation: motion-fade-out var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard) both;
+}
+
+@keyframes motion-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes motion-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Scale transitions */
+.motion-scale-in {
+  animation: motion-scale-in var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.motion-scale-out {
+  animation: motion-scale-out var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-accelerate) both;
+}
+
+@keyframes motion-scale-in {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes motion-scale-out {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* Slide transitions */
+.motion-slide-up {
+  animation: motion-slide-up var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.motion-slide-down {
+  animation: motion-slide-down var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.motion-slide-left {
+  animation: motion-slide-left var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.motion-slide-right {
+  animation: motion-slide-right var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+@keyframes motion-slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes motion-slide-down {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes motion-slide-left {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes motion-slide-right {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Container transform */
+.motion-container-transform {
+  animation: motion-container-transform var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized) both;
+}
+
+@keyframes motion-container-transform {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+    border-radius: var(--md-sys-shape-corner-extra-large);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    border-radius: var(--md-sys-shape-corner-medium);
+  }
+}
+
+/* Shared axis transitions */
+.motion-shared-x-in {
+  animation: motion-shared-x-in var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.motion-shared-x-out {
+  animation: motion-shared-x-out var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-accelerate) both;
+}
+
+.motion-shared-y-in {
+  animation: motion-shared-y-in var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.motion-shared-y-out {
+  animation: motion-shared-y-out var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-accelerate) both;
+}
+
+@keyframes motion-shared-x-in {
+  from {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes motion-shared-x-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+}
+
+@keyframes motion-shared-y-in {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes motion-shared-y-out {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+}
+
+/* ================================================================
+   2. BEER OLYMPICS PARTY ANIMATIONS
+   ================================================================ */
+
+/* Beer bubble float */
+.motion-bubble {
+  animation: motion-bubble 3s ease-in-out infinite;
+}
+
+@keyframes motion-bubble {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-20px) scale(1.1);
+  }
+}
+
+/* Party bounce */
+.motion-party-bounce {
+  animation: motion-party-bounce 1s ease-in-out infinite;
+}
+
+@keyframes motion-party-bounce {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-10px) rotate(-5deg);
+  }
+  75% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+}
+
+/* Victory celebration */
+.motion-victory {
+  animation: motion-victory 0.8s ease-out;
+}
+
+@keyframes motion-victory {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(180deg);
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+    opacity: 1;
+  }
+}
+
+/* Cheers clink */
+.motion-cheers {
+  animation: motion-cheers 0.6s ease-out;
+}
+
+@keyframes motion-cheers {
+  0% {
+    transform: rotate(-45deg) translateX(-50px);
+  }
+  50% {
+    transform: rotate(0deg) translateX(0);
+  }
+  60% {
+    transform: rotate(5deg) translateX(5px);
+  }
+  100% {
+    transform: rotate(0deg) translateX(0);
+  }
+}
+
+/* Confetti fall */
+.motion-confetti {
+  animation: motion-confetti 2s linear infinite;
+}
+
+@keyframes motion-confetti {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Trophy spin */
+.motion-trophy {
+  animation: motion-trophy 2s ease-in-out;
+}
+
+@keyframes motion-trophy {
+  0% {
+    transform: scale(0) rotateY(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1) rotateY(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotateY(360deg);
+    opacity: 1;
+  }
+}
+
+/* ================================================================
+   3. STAGGER ANIMATIONS
+   ================================================================ */
+
+/* Stagger children animations */
+.motion-stagger-children > * {
+  animation: motion-stagger-item var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate) both;
+  animation-delay: calc(var(--stagger-index, 0) * 50ms);
+}
+
+@keyframes motion-stagger-item {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* List item stagger */
+.motion-list-stagger {
+  --stagger-delay: 50ms;
+}
+
+.motion-list-stagger > *:nth-child(1) { animation-delay: calc(1 * var(--stagger-delay)); }
+.motion-list-stagger > *:nth-child(2) { animation-delay: calc(2 * var(--stagger-delay)); }
+.motion-list-stagger > *:nth-child(3) { animation-delay: calc(3 * var(--stagger-delay)); }
+.motion-list-stagger > *:nth-child(4) { animation-delay: calc(4 * var(--stagger-delay)); }
+.motion-list-stagger > *:nth-child(5) { animation-delay: calc(5 * var(--stagger-delay)); }
+.motion-list-stagger > *:nth-child(6) { animation-delay: calc(6 * var(--stagger-delay)); }
+.motion-list-stagger > *:nth-child(7) { animation-delay: calc(7 * var(--stagger-delay)); }
+.motion-list-stagger > *:nth-child(8) { animation-delay: calc(8 * var(--stagger-delay)); }
+.motion-list-stagger > *:nth-child(9) { animation-delay: calc(9 * var(--stagger-delay)); }
+.motion-list-stagger > *:nth-child(10) { animation-delay: calc(10 * var(--stagger-delay)); }
+
+/* ================================================================
+   4. INTERACTION FEEDBACK
+   ================================================================ */
+
+/* Touch ripple effect */
+.motion-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.motion-ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.motion-ripple:active::after {
+  animation: motion-ripple-effect 0.6s ease-out;
+}
+
+@keyframes motion-ripple-effect {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.3;
+  }
+  100% {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+/* Press feedback */
+.motion-press {
+  transition: transform var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.motion-press:active {
+  transform: scale(0.95);
+}
+
+/* Hover lift */
+.motion-hover-lift {
+  transition: transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+              box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.motion-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--md-sys-elevation-shadow-level3);
+}
+
+/* ================================================================
+   5. PAGE TRANSITIONS
+   ================================================================ */
+
+/* Page enter */
+.motion-page-enter {
+  animation: motion-page-enter var(--md-sys-motion-duration-medium3) var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+@keyframes motion-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Page exit */
+.motion-page-exit {
+  animation: motion-page-exit var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized-accelerate) both;
+}
+
+@keyframes motion-page-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-32px);
+  }
+}
+
+/* ================================================================
+   6. LOADING STATES
+   ================================================================ */
+
+/* Skeleton loading */
+.motion-skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--md-sys-color-surface-container);
+}
+
+.motion-skeleton::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--md-sys-color-surface-container-high),
+    transparent
+  );
+  animation: motion-skeleton-wave 1.5s ease-in-out infinite;
+}
+
+@keyframes motion-skeleton-wave {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Spinner */
+.motion-spinner {
+  animation: motion-spinner 1.4s linear infinite;
+}
+
+@keyframes motion-spinner {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Progress bar */
+.motion-progress {
+  position: relative;
+  overflow: hidden;
+}
+
+.motion-progress::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--md-sys-color-primary),
+    transparent
+  );
+  animation: motion-progress-indeterminate 1.5s ease-in-out infinite;
+}
+
+@keyframes motion-progress-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+/* ================================================================
+   7. UTILITY CLASSES
+   ================================================================ */
+
+/* Duration modifiers */
+.motion-duration-short { animation-duration: var(--md-sys-motion-duration-short4) !important; }
+.motion-duration-medium { animation-duration: var(--md-sys-motion-duration-medium2) !important; }
+.motion-duration-long { animation-duration: var(--md-sys-motion-duration-long2) !important; }
+.motion-duration-extra-long { animation-duration: var(--md-sys-motion-duration-extra-long2) !important; }
+
+/* Delay modifiers */
+.motion-delay-short { animation-delay: var(--md-sys-motion-duration-short2) !important; }
+.motion-delay-medium { animation-delay: var(--md-sys-motion-duration-medium1) !important; }
+.motion-delay-long { animation-delay: var(--md-sys-motion-duration-long1) !important; }
+
+/* Fill mode */
+.motion-fill-both { animation-fill-mode: both !important; }
+.motion-fill-forwards { animation-fill-mode: forwards !important; }
+.motion-fill-backwards { animation-fill-mode: backwards !important; }
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

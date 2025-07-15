@@ -1,4 +1,6 @@
 import rateLimit from 'express-rate-limit';
+import redisService, { CACHE_TTL } from '../services/redis';
+import { getApiCacheKey } from './cache-keys';
 
 // Rate limiting configurations
 export const createRateLimit = (options: {
@@ -126,3 +128,212 @@ export function validateApiKey(req: any): boolean {
   
   return apiKey === validApiKey;
 }
+
+// Cache middleware for API responses
+export interface CacheOptions {
+  ttl?: number;
+  keyGenerator?: (req: any) => string;
+  condition?: (req: any) => boolean;
+  skipCache?: (req: any) => boolean;
+}
+
+export function createCacheMiddleware(options: CacheOptions = {}) {
+  const {
+    ttl = CACHE_TTL.DEFAULT,
+    keyGenerator = (req) => getApiCacheKey(req.method, req.path, req.query),
+    condition = (req) => req.method === 'GET',
+    skipCache = () => false,
+  } = options;
+
+  return async (req: any, res: any, next: any) => {
+    // Skip caching if conditions are not met
+    if (!condition(req) || skipCache(req)) {
+      return next();
+    }
+
+    const cacheKey = keyGenerator(req);
+
+    try {
+      // Try to get from cache
+      const cached = await redisService.get(cacheKey);
+      
+      if (cached !== null) {
+        // Cache hit
+        res.setHeader('X-Cache', 'HIT');
+        res.setHeader('X-Cache-Key', cacheKey);
+        res.setHeader('Content-Type', 'application/json');
+        
+        // If cached response includes headers, apply them
+        if (cached.headers) {
+          Object.entries(cached.headers).forEach(([key, value]: [string, any]) => {
+            if (key !== 'X-Cache' && key !== 'X-Cache-Key') {
+              res.setHeader(key, value);
+            }
+          });
+        }
+        
+        return res.status(cached.status || 200).json(cached.data || cached);
+      }
+
+      // Cache miss - capture response
+      const originalSend = res.send;
+      const originalJson = res.json;
+      const originalStatus = res.status;
+      
+      let statusCode = 200;
+      const capturedHeaders: Record<string, any> = {};
+
+      // Capture status code
+      res.status = function(code: number) {
+        statusCode = code;
+        return originalStatus.call(this, code);
+      };
+
+      // Capture JSON responses
+      res.json = function(data: any) {
+        // Only cache successful responses
+        if (statusCode >= 200 && statusCode < 300) {
+          // Capture important headers
+          const headersToCache = [
+            'Content-Type',
+            'Cache-Control',
+            'ETag',
+            'Last-Modified',
+          ];
+          
+          headersToCache.forEach(header => {
+            const value = res.getHeader(header);
+            if (value) {
+              capturedHeaders[header] = value;
+            }
+          });
+
+          const cacheData = {
+            data,
+            status: statusCode,
+            headers: capturedHeaders,
+            timestamp: Date.now(),
+          };
+
+          // Cache asynchronously to not block response
+          redisService.set(cacheKey, cacheData, ttl).catch(err => {
+            console.error('Cache set error:', err);
+          });
+        }
+
+        res.setHeader('X-Cache', 'MISS');
+        res.setHeader('X-Cache-Key', cacheKey);
+        
+        return originalJson.call(this, data);
+      };
+
+      // Capture send responses (for non-JSON)
+      res.send = function(data: any) {
+        // For non-JSON responses, we skip caching
+        res.setHeader('X-Cache', 'BYPASS');
+        return originalSend.call(this, data);
+      };
+
+      next();
+    } catch (error) {
+      console.error('Cache middleware error:', error);
+      // Continue without caching on error
+      next();
+    }
+  };
+}
+
+// Specific cache middleware for common endpoints
+export const leaderboardCache = createCacheMiddleware({
+  ttl: CACHE_TTL.LEADERBOARD,
+  keyGenerator: (req) => `api:leaderboard:${req.params.slug || req.query.slug}`,
+});
+
+export const tournamentCache = createCacheMiddleware({
+  ttl: CACHE_TTL.TOURNAMENT_STATE,
+  keyGenerator: (req) => `api:tournament:${req.params.id || req.query.id}`,
+});
+
+export const matchCache = createCacheMiddleware({
+  ttl: CACHE_TTL.MATCH_RESULTS,
+  keyGenerator: (req) => `api:match:${req.params.id || req.query.id}`,
+});
+
+export const teamCache = createCacheMiddleware({
+  ttl: CACHE_TTL.TEAM_DATA,
+  keyGenerator: (req) => `api:team:${req.params.id || req.query.id}`,
+});
+
+// Cache invalidation middleware for mutations
+export function createInvalidationMiddleware(patterns: string[] | ((req: any) => string[])) {
+  return async (req: any, res: any, next: any) => {
+    // Only invalidate on mutations
+    if (req.method === 'GET' || req.method === 'OPTIONS') {
+      return next();
+    }
+
+    const originalSend = res.send;
+    const originalJson = res.json;
+    const originalStatus = res.status;
+    
+    let statusCode = 200;
+
+    res.status = function(code: number) {
+      statusCode = code;
+      return originalStatus.call(this, code);
+    };
+
+    const invalidateCache = async () => {
+      // Only invalidate on successful mutations
+      if (statusCode >= 200 && statusCode < 300) {
+        const keysToInvalidate = typeof patterns === 'function' ? patterns(req) : patterns;
+        
+        for (const pattern of keysToInvalidate) {
+          if (pattern.includes('*')) {
+            await redisService.deletePattern(pattern).catch(err => {
+              console.error(`Cache invalidation error for pattern ${pattern}:`, err);
+            });
+          } else {
+            await redisService.delete(pattern).catch(err => {
+              console.error(`Cache invalidation error for key ${pattern}:`, err);
+            });
+          }
+        }
+      }
+    };
+
+    res.json = async function(data: any) {
+      await invalidateCache();
+      return originalJson.call(this, data);
+    };
+
+    res.send = async function(data: any) {
+      await invalidateCache();
+      return originalSend.call(this, data);
+    };
+
+    next();
+  };
+}
+
+// Common invalidation patterns
+export const invalidateLeaderboard = createInvalidationMiddleware((req) => [
+  `api:leaderboard:${req.params.tournamentId || req.body?.tournamentId || '*'}`,
+  `beer_olympics:leaderboard:*`,
+]);
+
+export const invalidateTournament = createInvalidationMiddleware((req) => [
+  `api:tournament:${req.params.id || req.body?.id || '*'}`,
+  `beer_olympics:tournament:*`,
+]);
+
+export const invalidateMatch = createInvalidationMiddleware((req) => [
+  `api:match:${req.params.id || req.body?.id || '*'}`,
+  `beer_olympics:match:*`,
+  `beer_olympics:leaderboard:*`, // Matches affect leaderboards
+]);
+
+export const invalidateTeam = createInvalidationMiddleware((req) => [
+  `api:team:${req.params.id || req.body?.id || '*'}`,
+  `beer_olympics:team:*`,
+]);

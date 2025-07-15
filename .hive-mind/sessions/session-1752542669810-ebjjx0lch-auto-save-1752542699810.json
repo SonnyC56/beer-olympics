@@ -1,0 +1,81 @@
+{
+  "sessionId": "session-1752542669810-ebjjx0lch",
+  "checkpointId": "checkpoint-1752542699810-ipiqucqbc",
+  "checkpointName": "auto-save-1752542699810",
+  "timestamp": "2025-07-15T01:24:59.814Z",
+  "data": {
+    "timestamp": "2025-07-15T01:24:59.810Z",
+    "changeCount": 5,
+    "changesByType": {
+      "swarm_created": [
+        {
+          "type": "swarm_created",
+          "data": {
+            "swarmId": "swarm-1752542669809-bgcav8utg",
+            "swarmName": "hive-1752542669806",
+            "objective": "Make sure this app is feature complete to manage a beer olympucs tournamnet with 20+ people and rehault the entire UI with material design principals",
+            "workerCount": 8
+          },
+          "timestamp": "2025-07-15T01:24:29.811Z"
+        }
+      ],
+      "agent_activity": [
+        {
+          "type": "agent_activity",
+          "data": {
+            "agentId": "worker-swarm-1752542669809-bgcav8utg-0",
+            "activity": "spawned",
+            "data": {
+              "type": "researcher",
+              "name": "Researcher Worker 1"
+            }
+          },
+          "timestamp": "2025-07-15T01:24:29.812Z"
+        },
+        {
+          "type": "agent_activity",
+          "data": {
+            "agentId": "worker-swarm-1752542669809-bgcav8utg-1",
+            "activity": "spawned",
+            "data": {
+              "type": "coder",
+              "name": "Coder Worker 2"
+            }
+          },
+          "timestamp": "2025-07-15T01:24:29.812Z"
+        },
+        {
+          "type": "agent_activity",
+          "data": {
+            "agentId": "worker-swarm-1752542669809-bgcav8utg-2",
+            "activity": "spawned",
+            "data": {
+              "type": "analyst",
+              "name": "Analyst Worker 3"
+            }
+          },
+          "timestamp": "2025-07-15T01:24:29.812Z"
+        },
+        {
+          "type": "agent_activity",
+          "data": {
+            "agentId": "worker-swarm-1752542669809-bgcav8utg-3",
+            "activity": "spawned",
+            "data": {
+              "type": "tester",
+              "name": "Tester Worker 4"
+            }
+          },
+          "timestamp": "2025-07-15T01:24:29.812Z"
+        }
+      ]
+    },
+    "statistics": {
+      "tasksProcessed": 0,
+      "tasksCompleted": 0,
+      "memoryUpdates": 0,
+      "agentActivities": 4,
+      "consensusDecisions": 0
+    }
+  }
+}

@@ -65,6 +65,95 @@ const tournamentSettingsSchema = z.object({
 }).optional();
 
 export const enhancedTournamentRouter = router({
+  // Get tournament statistics by ID (for spectator mode)
+  getStats: publicProcedure
+    .input(z.object({
+      tournamentId: z.string(),
+    }))
+    .query(async ({ input }) => {
+      try {
+        const tournament = await getDocument(`tournament::${input.tournamentId}`) as Tournament;
+        
+        if (!tournament) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Tournament not found',
+          });
+        }
+        
+        // Get matches and calculate stats
+        const matchesResult = await query(
+          `SELECT * FROM \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default
+           WHERE _type = 'match' AND tournamentId = $1`,
+          { parameters: [input.tournamentId] }
+        );
+        
+        const matches = matchesResult.rows as any[];
+        const completedMatches = matches.filter(m => m.isComplete);
+        const activeMatches = matches.filter(m => !m.isComplete && m.startTime);
+        
+        // Get teams count
+        const teamsResult = await query(
+          `SELECT COUNT(*) as count FROM \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default
+           WHERE _type = 'team' AND tournamentId = $1`,
+          { parameters: [input.tournamentId] }
+        );
+        
+        // Get unique games played
+        const gamesResult = await query(
+          `SELECT COUNT(DISTINCT eventId) as count FROM \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default
+           WHERE _type = 'match' AND tournamentId = $1 AND isComplete = true`,
+          { parameters: [input.tournamentId] }
+        );
+        
+        // Calculate average match duration
+        let avgMatchDuration = 15; // default
+        let matchDurationTrend = 0;
+        
+        if (completedMatches.length > 0) {
+          const durations = completedMatches
+            .filter(m => m.startTime && m.endTime)
+            .map(m => {
+              const start = new Date(m.startTime).getTime();
+              const end = new Date(m.endTime).getTime();
+              return (end - start) / (1000 * 60); // minutes
+            });
+            
+          if (durations.length > 0) {
+            avgMatchDuration = Math.round(durations.reduce((a, b) => a + b, 0) / durations.length);
+            
+            // Calculate trend (last 5 matches vs previous)
+            if (durations.length > 5) {
+              const recent = durations.slice(-5);
+              const previous = durations.slice(-10, -5);
+              const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
+              const previousAvg = previous.reduce((a, b) => a + b, 0) / previous.length;
+              matchDurationTrend = Math.round(((recentAvg - previousAvg) / previousAvg) * 100);
+            }
+          }
+        }
+        
+        return {
+          totalMatches: matches.length,
+          completedMatches: completedMatches.length,
+          activeMatches: activeMatches.length,
+          activeTeams: teamsResult.rows[0]?.count || 0,
+          uniqueGamesPlayed: gamesResult.rows[0]?.count || 0,
+          avgMatchDuration,
+          matchDurationTrend,
+          completionPercentage: matches.length > 0 
+            ? Math.round((completedMatches.length / matches.length) * 100)
+            : 0
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch tournament statistics',
+        });
+      }
+    }),
   create: protectedProcedure
     .input(z.object({
       name: z.string().min(1).max(100),
@@ -339,7 +428,7 @@ export const enhancedTournamentRouter = router({
       }
     }),
 
-  getStats: publicProcedure
+  getStatsBySlug: publicProcedure
     .input(z.object({
       slug: z.string(),
     }))
@@ -674,6 +763,81 @@ export const enhancedTournamentRouter = router({
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to complete bonus challenge',
+        });
+      }
+    }),
+
+  // Get tournament leaderboard
+  getLeaderboard: publicProcedure
+    .input(z.object({
+      tournamentId: z.string(),
+    }))
+    .query(async ({ input }) => {
+      try {
+        // Get teams for this tournament
+        const teamsResult = await query(
+          `SELECT id, name, colorHex, flagCode 
+           FROM \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default
+           WHERE _type = 'team' AND tournamentId = $1`,
+          { parameters: [input.tournamentId] }
+        );
+        
+        // Get score totals
+        const scoresResult = await query(
+          `SELECT teamId, SUM(points) as totalPoints, COUNT(*) as matchesPlayed,
+                  SUM(CASE WHEN reason LIKE 'Won %' THEN 1 ELSE 0 END) as wins,
+                  SUM(CASE WHEN reason LIKE 'Played %' AND reason NOT LIKE 'Won %' THEN 1 ELSE 0 END) as losses
+           FROM \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default
+           WHERE _type = 'score_entry' AND tournamentId = $1
+           GROUP BY teamId`,
+          { parameters: [input.tournamentId] }
+        );
+        
+        // Create score map
+        const scoreMap = new Map<string, any>();
+        scoresResult.rows.forEach((row: any) => {
+          scoreMap.set(row.teamId, {
+            points: row.totalPoints || 0,
+            matchesPlayed: row.matchesPlayed || 0,
+            wins: row.wins || 0,
+            losses: row.losses || 0
+          });
+        });
+        
+        // Combine teams with scores
+        const leaderboard = teamsResult.rows.map((team: any, index: number) => {
+          const stats = scoreMap.get(team.id) || { points: 0, matchesPlayed: 0, wins: 0, losses: 0 };
+          return {
+            id: team.id,
+            name: team.name,
+            color: team.colorHex,
+            flagCode: team.flagCode,
+            rank: index + 1, // Will be recalculated after sorting
+            points: stats.points,
+            wins: stats.wins,
+            losses: stats.losses,
+            gamesPlayed: stats.matchesPlayed
+          };
+        });
+        
+        // Sort by points and assign ranks
+        leaderboard.sort((a, b) => {
+          if (b.points !== a.points) return b.points - a.points;
+          return b.wins - a.wins;
+        });
+        
+        // Update ranks
+        leaderboard.forEach((team, index) => {
+          team.rank = index + 1;
+        });
+        
+        return leaderboard;
+      } catch (error) {
+        if (error instanceof TRPCError) throw error;
+        
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch leaderboard',
         });
       }
     })

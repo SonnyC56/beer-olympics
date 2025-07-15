@@ -187,6 +187,117 @@ export function clearRSVPProgress() {
   localStorage.removeItem(CURRENT_RSVP_KEY);
 }
 
+// Check-in related functions
+export interface CheckInData {
+  id: string;
+  method: 'qr' | 'manual' | 'self_service';
+  checkedInAt: string;
+  checkedInBy?: string;
+  autoAssignedTeam?: boolean;
+  teamId?: string;
+  teamName?: string;
+  tableNumber?: number;
+  isLateArrival?: boolean;
+}
+
+export async function checkInAttendee(
+  attendeeId: string, 
+  method: 'qr' | 'manual' | 'self_service' = 'manual',
+  options?: {
+    autoAssignTeam?: boolean;
+    isLateArrival?: boolean;
+  }
+): Promise<{
+  success: boolean;
+  teamAssigned?: boolean;
+  teamName?: string;
+  tableNumber?: number;
+  message?: string;
+}> {
+  try {
+    const result = await trpcClient.rsvp.checkIn.mutate({
+      id: attendeeId,
+      method,
+      ...options
+    });
+    
+    return result;
+  } catch (error) {
+    console.error('Failed to check in attendee:', error);
+    return { success: false, message: 'Check-in failed' };
+  }
+}
+
+export async function getCheckInStatus(tournamentSlug: string): Promise<{
+  success: boolean;
+  attendees: any[];
+  stats: {
+    totalRSVPs: number;
+    checkedIn: number;
+    waitlist: number;
+    noShows: number;
+    capacity: number;
+    teamsFormed: number;
+    lateArrivals: number;
+  };
+}> {
+  try {
+    const result = await trpcClient.rsvp.getCheckInStatus.query({ tournamentSlug });
+    return result;
+  } catch (error) {
+    console.error('Failed to get check-in status:', error);
+    return {
+      success: false,
+      attendees: [],
+      stats: {
+        totalRSVPs: 0,
+        checkedIn: 0,
+        waitlist: 0,
+        noShows: 0,
+        capacity: 64,
+        teamsFormed: 0,
+        lateArrivals: 0
+      }
+    };
+  }
+}
+
+export async function generateCheckInQRCode(attendeeId: string): Promise<string> {
+  // Generate QR code data for check-in
+  const qrData = JSON.stringify({
+    attendeeId,
+    timestamp: Date.now(),
+    type: 'checkin'
+  });
+  
+  // This would typically call a QR code generation service
+  // For now, return the data that would be encoded
+  return qrData;
+}
+
+export async function handleWaitlist(
+  tournamentSlug: string,
+  action: 'add' | 'remove' | 'promote',
+  attendeeId: string
+): Promise<{
+  success: boolean;
+  position?: number;
+  message?: string;
+}> {
+  try {
+    const result = await trpcClient.rsvp.manageWaitlist.mutate({
+      tournamentSlug,
+      action,
+      attendeeId
+    });
+    
+    return result;
+  } catch (error) {
+    console.error('Failed to manage waitlist:', error);
+    return { success: false, message: 'Waitlist operation failed' };
+  }
+}
+
 // Export RSVPs to CSV
 export async function exportRSVPsToCSV(tournamentSlug: string): Promise<string> {
   try {

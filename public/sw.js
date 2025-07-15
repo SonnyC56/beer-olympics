@@ -1,12 +1,15 @@
-const CACHE_NAME = 'beer-olympics-v2';
-const STATIC_CACHE_NAME = 'beer-olympics-static-v2';
-const API_CACHE_NAME = 'beer-olympics-api-v2';
+const CACHE_NAME = 'beer-olympics-v3';
+const STATIC_CACHE_NAME = 'beer-olympics-static-v3';
+const API_CACHE_NAME = 'beer-olympics-api-v3';
+const OFFLINE_QUEUE_NAME = 'beer-olympics-offline-queue';
 
 // URLs to cache when the SW is installed
 const STATIC_URLS = [
   '/',
   '/manifest.json',
   '/vite.svg',
+  '/icons/icon-72x72.svg',
+  '/icons/icon-144x144.svg',
   // Add other static assets as needed
 ];
 
@@ -15,7 +18,13 @@ const API_ENDPOINTS = [
   '/api/tournament/',
   '/api/leaderboard/',
   '/api/teams/',
+  '/api/trpc/',
 ];
+
+// IndexedDB setup for offline queue
+const OFFLINE_DB_NAME = 'BeerOlympicsOffline';
+const OFFLINE_DB_VERSION = 1;
+const OFFLINE_STORE_NAME = 'pendingRequests';
 
 // Install event - cache static resources
 self.addEventListener('install', (event) => {
@@ -236,26 +245,150 @@ async function handleNavigationRequest(request) {
   }
 }
 
+// IndexedDB helper functions
+async function openOfflineDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(OFFLINE_DB_NAME, OFFLINE_DB_VERSION);
+    
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(OFFLINE_STORE_NAME)) {
+        db.createObjectStore(OFFLINE_STORE_NAME, { keyPath: 'id', autoIncrement: true });
+      }
+    };
+  });
+}
+
+async function saveOfflineRequest(request, body) {
+  const db = await openOfflineDB();
+  const transaction = db.transaction([OFFLINE_STORE_NAME], 'readwrite');
+  const store = transaction.objectStore(OFFLINE_STORE_NAME);
+  
+  const offlineRequest = {
+    url: request.url,
+    method: request.method,
+    headers: Object.fromEntries(request.headers.entries()),
+    body: body,
+    timestamp: Date.now(),
+  };
+  
+  return store.add(offlineRequest);
+}
+
+async function getPendingRequests() {
+  const db = await openOfflineDB();
+  const transaction = db.transaction([OFFLINE_STORE_NAME], 'readonly');
+  const store = transaction.objectStore(OFFLINE_STORE_NAME);
+  
+  return new Promise((resolve, reject) => {
+    const request = store.getAll();
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function deleteOfflineRequest(id) {
+  const db = await openOfflineDB();
+  const transaction = db.transaction([OFFLINE_STORE_NAME], 'readwrite');
+  const store = transaction.objectStore(OFFLINE_STORE_NAME);
+  
+  return store.delete(id);
+}
+
+// Handle offline form submissions
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  
+  // Handle POST/PUT/PATCH requests that might need offline queue
+  if (['POST', 'PUT', 'PATCH'].includes(request.method) && request.url.includes('/api/')) {
+    event.respondWith(handleMutableRequest(request));
+    return;
+  }
+});
+
+async function handleMutableRequest(request) {
+  try {
+    const response = await fetch(request.clone());
+    return response;
+  } catch (error) {
+    // Network failed, save to offline queue
+    console.log('Offline - saving request to queue:', request.url);
+    
+    const body = await request.text();
+    await saveOfflineRequest(request, body);
+    
+    // Register sync event
+    if ('sync' in self.registration) {
+      await self.registration.sync.register('offline-sync');
+    }
+    
+    // Return a response indicating offline storage
+    return new Response(
+      JSON.stringify({
+        success: true,
+        offline: true,
+        message: 'Your action has been saved and will be synced when online.',
+      }),
+      {
+        status: 202,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
+}
+
 // Background sync for offline actions
 self.addEventListener('sync', (event) => {
   console.log('Background sync triggered:', event.tag);
   
-  if (event.tag === 'score-submission') {
-    event.waitUntil(syncScoreSubmissions());
+  if (event.tag === 'offline-sync') {
+    event.waitUntil(syncOfflineRequests());
   }
 });
 
-// Sync pending score submissions when back online
-async function syncScoreSubmissions() {
+// Sync pending requests when back online
+async function syncOfflineRequests() {
   try {
-    // This would retrieve pending submissions from IndexedDB
-    // and submit them when back online
-    console.log('Syncing score submissions...');
+    console.log('Syncing offline requests...');
     
-    // Implementation would go here
-    // For now, just log that sync is working
+    const pendingRequests = await getPendingRequests();
+    console.log(`Found ${pendingRequests.length} pending requests`);
+    
+    for (const offlineRequest of pendingRequests) {
+      try {
+        const response = await fetch(offlineRequest.url, {
+          method: offlineRequest.method,
+          headers: offlineRequest.headers,
+          body: offlineRequest.body,
+        });
+        
+        if (response.ok) {
+          await deleteOfflineRequest(offlineRequest.id);
+          console.log('Successfully synced:', offlineRequest.url);
+          
+          // Notify the app about successful sync
+          const clients = await self.clients.matchAll();
+          clients.forEach(client => {
+            client.postMessage({
+              type: 'sync-success',
+              url: offlineRequest.url,
+              timestamp: Date.now(),
+            });
+          });
+        } else {
+          console.error('Failed to sync:', offlineRequest.url, response.status);
+        }
+      } catch (error) {
+        console.error('Error syncing request:', offlineRequest.url, error);
+      }
+    }
   } catch (error) {
-    console.error('Failed to sync score submissions:', error);
+    console.error('Failed to sync offline requests:', error);
   }
 }
 
@@ -264,18 +397,45 @@ self.addEventListener('push', (event) => {
   if (!event.data) return;
   
   const data = event.data.json();
+  
+  // Enhanced notification options
   const options = {
     body: data.body,
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
+    icon: data.icon || '/icons/icon-192x192.png',
+    badge: data.badge || '/icons/icon-72x72.png',
     tag: data.tag || 'beer-olympics',
-    data: data.data,
+    data: data.data || {},
     actions: data.actions || [],
     requireInteraction: data.requireInteraction || false,
+    silent: data.silent || false,
+    vibrate: data.vibrate || [200],
+    image: data.image,
+    renotify: data.renotify || false,
+    timestamp: Date.now(),
   };
+  
+  // Play sound if specified and not silent
+  if (data.sound && !data.silent) {
+    // This would be handled by the notification itself
+    options.sound = data.sound;
+  }
   
   event.waitUntil(
     self.registration.showNotification(data.title, options)
+      .then(() => {
+        // Track notification display
+        if (data.data && data.data.type) {
+          self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+              client.postMessage({
+                type: 'notification-displayed',
+                notificationType: data.data.type,
+                timestamp: Date.now(),
+              });
+            });
+          });
+        }
+      })
   );
 });
 
@@ -286,18 +446,101 @@ self.addEventListener('notificationclick', (event) => {
   const data = event.notification.data || {};
   const action = event.action;
   
-  if (action === 'view') {
-    // Open the app to view the content
-    event.waitUntil(
-      clients.openWindow(data.url || '/')
-    );
-  } else if (action === 'dismiss') {
-    // Just close the notification
-    return;
-  } else {
-    // Default action - open the app
-    event.waitUntil(
-      clients.openWindow(data.url || '/')
-    );
+  // Handle different actions
+  const handleAction = async () => {
+    const allClients = await clients.matchAll({ type: 'window' });
+    
+    if (action === 'ready' && data.type === 'your-turn') {
+      // Player is ready - notify the app
+      if (allClients.length > 0) {
+        allClients[0].postMessage({
+          type: 'player-ready',
+          matchId: data.matchId,
+          tournamentId: data.tournamentId,
+        });
+        allClients[0].focus();
+      } else {
+        clients.openWindow(`/tournament/${data.tournamentId}/match/${data.matchId}`);
+      }
+    } else if (action === 'delay' && data.type === 'your-turn') {
+      // Player needs delay - notify the app
+      if (allClients.length > 0) {
+        allClients[0].postMessage({
+          type: 'player-delay',
+          matchId: data.matchId,
+          tournamentId: data.tournamentId,
+          delay: 5, // 5 minutes
+        });
+        allClients[0].focus();
+      } else {
+        clients.openWindow(`/tournament/${data.tournamentId}`);
+      }
+    } else if (action === 'view') {
+      // View specific content
+      const urlToOpen = data.url || 
+        (data.type === 'leaderboard-update' ? `/tournament/${data.tournamentId}/leaderboard` :
+         data.type === 'game-start' ? `/tournament/${data.tournamentId}/match/${data.matchId}` :
+         data.type === 'tournament-complete' ? `/tournament/${data.tournamentId}/results` :
+         `/tournament/${data.tournamentId}`);
+      
+      if (allClients.length > 0) {
+        allClients[0].navigate(urlToOpen);
+        allClients[0].focus();
+      } else {
+        clients.openWindow(urlToOpen);
+      }
+    } else if (action === 'dismiss') {
+      // Just close the notification
+      return;
+    } else {
+      // Default action - open or focus the app
+      if (allClients.length > 0) {
+        allClients[0].focus();
+        if (data.tournamentId) {
+          allClients[0].navigate(`/tournament/${data.tournamentId}`);
+        }
+      } else {
+        clients.openWindow(data.url || '/');
+      }
+    }
+  };
+  
+  event.waitUntil(handleAction());
+});
+
+// Handle notification close
+self.addEventListener('notificationclose', (event) => {
+  const data = event.notification.data || {};
+  
+  // Track notification dismissal
+  if (data.type) {
+    self.clients.matchAll().then(clients => {
+      clients.forEach(client => {
+        client.postMessage({
+          type: 'notification-dismissed',
+          notificationType: data.type,
+          timestamp: Date.now(),
+        });
+      });
+    });
+  }
+});
+
+// Handle messages from the app
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'test-notification') {
+    // Show a test notification
+    self.registration.showNotification('🎯 Test Notification', {
+      body: 'This is a test notification from Beer Olympics!',
+      icon: '/icons/icon-192x192.png',
+      badge: '/icons/icon-72x72.png',
+      tag: 'test',
+      data: { type: 'test' },
+      actions: [
+        { action: 'view', title: 'View' },
+        { action: 'dismiss', title: 'Dismiss' },
+      ],
+      vibrate: [200, 100, 200],
+    });
   }
 });

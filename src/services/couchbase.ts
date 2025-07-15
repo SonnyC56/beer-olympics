@@ -1,4 +1,6 @@
 import { connect, Cluster, Bucket, Collection, QueryResult } from 'couchbase';
+import redisService, { CACHE_TTL } from './redis';
+import { CacheKeys, CacheInvalidation } from '../utils/cache-keys';
 
 let cluster: Cluster | null = null;
 let bucket: Bucket | null = null;
@@ -85,12 +87,34 @@ export async function closeConnection() {
   }
 }
 
-// Helper functions for common operations
-export async function getDocument(key: string, collection = '_default') {
+// Helper functions for common operations with caching
+export async function getDocument(key: string, collection = '_default', cacheOptions?: {
+  enableCache?: boolean;
+  cacheTTL?: number;
+  cacheKey?: string;
+}) {
+  const { enableCache = true, cacheTTL = CACHE_TTL.DEFAULT, cacheKey } = cacheOptions || {};
+  const redisCacheKey = cacheKey || `doc:${collection}:${key}`;
+
+  // Try cache first if enabled
+  if (enableCache) {
+    const cached = await redisService.get(redisCacheKey);
+    if (cached !== null) {
+      return cached;
+    }
+  }
+
   try {
     const coll = await getCollection(collection);
     const result = await coll.get(key);
-    return result.content;
+    const content = result.content;
+
+    // Cache the result if enabled
+    if (enableCache && content) {
+      await redisService.set(redisCacheKey, content, cacheTTL);
+    }
+
+    return content;
   } catch (error) {
     if (error instanceof Error && error.name === 'DocumentNotFoundError') {
       return null;
@@ -99,20 +123,52 @@ export async function getDocument(key: string, collection = '_default') {
   }
 }
 
-export async function upsertDocument(key: string, value: any, collection = '_default') {
+export async function upsertDocument(key: string, value: any, collection = '_default', cacheOptions?: {
+  invalidateCache?: boolean;
+  cacheKey?: string;
+  relatedCacheKeys?: string[];
+}) {
+  const { invalidateCache = true, cacheKey, relatedCacheKeys = [] } = cacheOptions || {};
+
   try {
     const coll = await getCollection(collection);
     const result = await coll.upsert(key, value);
+
+    // Invalidate cache if enabled
+    if (invalidateCache) {
+      const keysToInvalidate = [
+        cacheKey || `doc:${collection}:${key}`,
+        ...relatedCacheKeys
+      ];
+      await redisService.delete(keysToInvalidate);
+    }
+
     return result;
   } catch (error) {
     throw new CouchbaseError(`Failed to upsert document ${key}: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
-export async function removeDocument(key: string, collection = '_default') {
+export async function removeDocument(key: string, collection = '_default', cacheOptions?: {
+  invalidateCache?: boolean;
+  cacheKey?: string;
+  relatedCacheKeys?: string[];
+}) {
+  const { invalidateCache = true, cacheKey, relatedCacheKeys = [] } = cacheOptions || {};
+
   try {
     const coll = await getCollection(collection);
     const result = await coll.remove(key);
+
+    // Invalidate cache if enabled
+    if (invalidateCache) {
+      const keysToInvalidate = [
+        cacheKey || `doc:${collection}:${key}`,
+        ...relatedCacheKeys
+      ];
+      await redisService.delete(keysToInvalidate);
+    }
+
     return result;
   } catch (error) {
     if (error instanceof Error && error.name === 'DocumentNotFoundError') {
@@ -121,10 +177,128 @@ export async function removeDocument(key: string, collection = '_default') {
     throw new CouchbaseError(`Failed to remove document ${key}: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
-// Execute query helper
-export async function executeQuery(statement: string, params?: any[]): Promise<QueryResult> {
+
+// Execute query with caching support
+export async function executeQuery(statement: string, params?: any[], cacheOptions?: {
+  enableCache?: boolean;
+  cacheTTL?: number;
+  cacheKey?: string;
+}): Promise<QueryResult> {
+  const { enableCache = false, cacheTTL = CACHE_TTL.DEFAULT, cacheKey } = cacheOptions || {};
+  
+  // Generate cache key if not provided
+  const redisCacheKey = cacheKey || `query:${Buffer.from(statement + JSON.stringify(params || [])).toString('base64').substring(0, 50)}`;
+
+  // Try cache first if enabled
+  if (enableCache) {
+    const cached = await redisService.get<QueryResult>(redisCacheKey);
+    if (cached !== null) {
+      return cached;
+    }
+  }
+
   const { cluster } = await getCouchbaseConnection();
-  return cluster.query(statement, { parameters: params });
+  const result = await cluster.query(statement, { parameters: params });
+
+  // Cache the result if enabled
+  if (enableCache) {
+    await redisService.set(redisCacheKey, result, cacheTTL);
+  }
+
+  return result;
+}
+
+// Specialized query functions with built-in caching
+
+export async function getTournamentLeaderboard(tournamentId: string): Promise<any[]> {
+  const cacheKey = CacheKeys.leaderboard.byTournament(tournamentId);
+  
+  return redisService.warm(cacheKey, async () => {
+    const statement = `
+      SELECT 
+        t.team_id as teamId,
+        t.name as teamName,
+        t.color_hex as colorHex,
+        t.flag_code as flagCode,
+        COALESCE(SUM(mr.points), 0) as totalPoints,
+        COUNT(DISTINCT mr.match_id) as matchesPlayed,
+        COUNT(CASE WHEN mr.position = 1 THEN 1 END) as wins
+      FROM beer_olympics t
+      LEFT JOIN beer_olympics mr ON mr.type = 'match_result' 
+        AND mr.team_id = t.team_id 
+        AND mr.tournament_id = $tournamentId
+      WHERE t.type = 'team'
+        AND t.tournament_id = $tournamentId
+      GROUP BY t.team_id, t.name, t.color_hex, t.flag_code
+      ORDER BY totalPoints DESC, wins DESC, teamName
+    `;
+    
+    const result = await executeQuery(statement, [tournamentId]);
+    const rows = result.rows || [];
+    
+    // Add position numbers
+    return rows.map((row, index) => ({
+      ...row,
+      position: index + 1
+    }));
+  }, CACHE_TTL.LEADERBOARD);
+}
+
+export async function getTournamentStandings(tournamentId: string): Promise<any> {
+  const cacheKey = CacheKeys.tournament.standings(tournamentId);
+  
+  return redisService.warm(cacheKey, async () => {
+    const statement = `
+      SELECT 
+        tournament_id,
+        current_round,
+        total_rounds,
+        status,
+        standings
+      FROM beer_olympics
+      WHERE type = 'tournament'
+        AND tournament_id = $tournamentId
+    `;
+    
+    const result = await executeQuery(statement, [tournamentId]);
+    return result.rows?.[0] || null;
+  }, CACHE_TTL.TOURNAMENT_STANDINGS);
+}
+
+export async function getTeamStats(teamId: string, tournamentId?: string): Promise<any> {
+  const cacheKey = CacheKeys.team.stats(teamId, tournamentId);
+  const ttl = CACHE_TTL.TEAM_DATA;
+  
+  return redisService.warm(cacheKey, async () => {
+    let statement = `
+      SELECT 
+        COUNT(*) as totalMatches,
+        COALESCE(SUM(points), 0) as totalPoints,
+        COUNT(CASE WHEN position = 1 THEN 1 END) as wins,
+        COUNT(CASE WHEN position = 2 THEN 1 END) as secondPlace,
+        COUNT(CASE WHEN position = 3 THEN 1 END) as thirdPlace,
+        AVG(points) as avgPoints
+      FROM beer_olympics
+      WHERE type = 'match_result'
+        AND team_id = $teamId
+    `;
+    
+    const params: any[] = [teamId];
+    
+    if (tournamentId) {
+      statement += ' AND tournament_id = $tournamentId';
+      params.push(tournamentId);
+    }
+    
+    const result = await executeQuery(statement, params);
+    return result.rows?.[0] || null;
+  }, ttl);
+}
+
+// Cache warming for popular data
+export async function warmLeaderboardCache(tournamentId: string): Promise<void> {
+  await getTournamentLeaderboard(tournamentId);
+  await getTournamentStandings(tournamentId);
 }
 
 // Export couchbaseService for compatibility
@@ -135,7 +309,23 @@ export const couchbaseService = {
   query: executeQuery,
   getCouchbaseConnection,
   getCollection,
-  CouchbaseError
+  CouchbaseError,
+  // New cached methods
+  getTournamentLeaderboard,
+  getTournamentStandings,
+  getTeamStats,
+  warmLeaderboardCache,
+  // Cache invalidation helpers
+  invalidateMatch: async (matchId: string, tournamentId: string, teamIds: string[]) => {
+    const keys = await CacheInvalidation.onMatchUpdate(matchId, tournamentId, teamIds);
+    await redisService.delete(keys);
+  },
+  invalidateTournament: async (tournamentId: string) => {
+    const patterns = await CacheInvalidation.onTournamentUpdate(tournamentId);
+    for (const pattern of patterns) {
+      await redisService.deletePattern(pattern);
+    }
+  },
 };
 
 // Also export default couchbase object for RSVP router

@@ -1,0 +1,86 @@
+import { OAuth2Client } from 'google-auth-library';
+import jwt from 'jsonwebtoken';
+// Build the redirect URL properly
+const buildRedirectURL = () => {
+    const baseUrl = process.env.AUTH_URL || 'http://localhost:5173';
+    return `${baseUrl}/api/auth/callback`;
+};
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET, buildRedirectURL());
+export async function generateAuthUrl() {
+    try {
+        console.log('Generating auth URL with:', {
+            clientId: process.env.GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET',
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET',
+            redirectUri: buildRedirectURL(),
+            authUrl: process.env.AUTH_URL
+        });
+        const url = client.generateAuthUrl({
+            access_type: 'offline',
+            scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email'],
+            prompt: 'consent',
+        });
+        console.log('Generated OAuth URL:', url);
+        return url;
+    }
+    catch (error) {
+        console.error('Error generating auth URL:', error);
+        throw new Error(`Failed to generate OAuth URL: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+export async function verifyGoogleToken(code) {
+    try {
+        const { tokens } = await client.getToken(code);
+        client.setCredentials(tokens);
+        const ticket = await client.verifyIdToken({
+            idToken: tokens.id_token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        if (!payload) {
+            throw new Error('Invalid token payload');
+        }
+        return {
+            id: `google-${payload.sub}`,
+            email: payload.email,
+            name: payload.name || payload.email,
+            image: payload.picture,
+        };
+    }
+    catch (error) {
+        throw new Error('Failed to verify Google token');
+    }
+}
+export function generateJWT(user) {
+    return jwt.sign({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+    }, process.env.AUTH_SECRET, {
+        expiresIn: '7d',
+        issuer: 'beer-olympics',
+    });
+}
+export function verifyJWT(token) {
+    try {
+        const decoded = jwt.verify(token, process.env.AUTH_SECRET);
+        return {
+            id: decoded.id,
+            email: decoded.email,
+            name: decoded.name,
+            image: decoded.image,
+        };
+    }
+    catch (error) {
+        return null;
+    }
+}
+export function parseAuthCookie(cookieString) {
+    if (!cookieString)
+        return null;
+    const cookies = cookieString.split(';').map(c => c.trim());
+    const authCookie = cookies.find(c => c.startsWith('auth-token='));
+    if (!authCookie)
+        return null;
+    return authCookie.split('=')[1];
+}

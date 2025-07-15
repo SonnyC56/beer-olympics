@@ -1,0 +1,676 @@
+/* ================================================================
+   Material Design 3 Theme System - Beer Olympics Edition
+   ================================================================
+   Complete MD3 token system with Beer Olympics brand identity
+   ================================================================ */
+
+/* ================================================================
+   1. COLOR SYSTEM - Material You with Beer Olympics Theme
+   ================================================================ */
+
+:root {
+  /* Material Design 3 Color Roles - Light Theme */
+  
+  /* Primary - Beer Olympics Gold */
+  --md-sys-color-primary: #f59e0b;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #fef3c7;
+  --md-sys-color-on-primary-container: #78350f;
+  
+  /* Secondary - Party Cyan */
+  --md-sys-color-secondary: #06b6d4;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #e0f2fe;
+  --md-sys-color-on-secondary-container: #164e63;
+  
+  /* Tertiary - Fun Pink */
+  --md-sys-color-tertiary: #ec4899;
+  --md-sys-color-on-tertiary: #ffffff;
+  --md-sys-color-tertiary-container: #fce7f3;
+  --md-sys-color-on-tertiary-container: #831843;
+  
+  /* Error */
+  --md-sys-color-error: #dc2626;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #fee2e2;
+  --md-sys-color-on-error-container: #7f1d1d;
+  
+  /* Background */
+  --md-sys-color-background: #fffbeb;
+  --md-sys-color-on-background: #1c1917;
+  
+  /* Surface - Beer foam inspired */
+  --md-sys-color-surface: #fffdf7;
+  --md-sys-color-on-surface: #1c1917;
+  --md-sys-color-surface-variant: #fef3c7;
+  --md-sys-color-on-surface-variant: #78350f;
+  
+  /* Surface levels (elevation) */
+  --md-sys-color-surface-dim: #f5f5f4;
+  --md-sys-color-surface-bright: #ffffff;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #fffdf7;
+  --md-sys-color-surface-container: #fef3c7;
+  --md-sys-color-surface-container-high: #fde68a;
+  --md-sys-color-surface-container-highest: #fcd34d;
+  
+  /* Outline */
+  --md-sys-color-outline: #a8a29e;
+  --md-sys-color-outline-variant: #e7e5e4;
+  
+  /* Inverse */
+  --md-sys-color-inverse-surface: #292524;
+  --md-sys-color-inverse-on-surface: #f5f5f4;
+  --md-sys-color-inverse-primary: #fbbf24;
+  
+  /* Scrim */
+  --md-sys-color-scrim: #000000;
+  
+  /* Shadow */
+  --md-sys-color-shadow: #000000;
+}
+
+/* Dark Theme Color Tokens */
+[data-theme="dark"] {
+  /* Primary */
+  --md-sys-color-primary: #fbbf24;
+  --md-sys-color-on-primary: #451a03;
+  --md-sys-color-primary-container: #78350f;
+  --md-sys-color-on-primary-container: #fef3c7;
+  
+  /* Secondary */
+  --md-sys-color-secondary: #67e8f9;
+  --md-sys-color-on-secondary: #083344;
+  --md-sys-color-secondary-container: #164e63;
+  --md-sys-color-on-secondary-container: #e0f2fe;
+  
+  /* Tertiary */
+  --md-sys-color-tertiary: #f9a8d4;
+  --md-sys-color-on-tertiary: #500724;
+  --md-sys-color-tertiary-container: #831843;
+  --md-sys-color-on-tertiary-container: #fce7f3;
+  
+  /* Error */
+  --md-sys-color-error: #ef4444;
+  --md-sys-color-on-error: #450a0a;
+  --md-sys-color-error-container: #7f1d1d;
+  --md-sys-color-on-error-container: #fee2e2;
+  
+  /* Background */
+  --md-sys-color-background: #1c1917;
+  --md-sys-color-on-background: #f5f5f4;
+  
+  /* Surface */
+  --md-sys-color-surface: #292524;
+  --md-sys-color-on-surface: #f5f5f4;
+  --md-sys-color-surface-variant: #44403c;
+  --md-sys-color-on-surface-variant: #d6d3d1;
+  
+  /* Surface levels */
+  --md-sys-color-surface-dim: #1c1917;
+  --md-sys-color-surface-bright: #44403c;
+  --md-sys-color-surface-container-lowest: #0c0a09;
+  --md-sys-color-surface-container-low: #1c1917;
+  --md-sys-color-surface-container: #292524;
+  --md-sys-color-surface-container-high: #44403c;
+  --md-sys-color-surface-container-highest: #57534e;
+  
+  /* Outline */
+  --md-sys-color-outline: #a8a29e;
+  --md-sys-color-outline-variant: #57534e;
+  
+  /* Inverse */
+  --md-sys-color-inverse-surface: #f5f5f4;
+  --md-sys-color-inverse-on-surface: #1c1917;
+  --md-sys-color-inverse-primary: #f59e0b;
+}
+
+/* ================================================================
+   2. TYPOGRAPHY SYSTEM - Fredoka meets Material Design
+   ================================================================ */
+
+:root {
+  /* Type scale - MD3 standard with Beer Olympics fonts */
+  --md-sys-typescale-display-large-font: 'Fredoka', system-ui, sans-serif;
+  --md-sys-typescale-display-large-size: 57px;
+  --md-sys-typescale-display-large-line-height: 64px;
+  --md-sys-typescale-display-large-weight: 600;
+  --md-sys-typescale-display-large-tracking: -0.25px;
+  
+  --md-sys-typescale-display-medium-font: 'Fredoka', system-ui, sans-serif;
+  --md-sys-typescale-display-medium-size: 45px;
+  --md-sys-typescale-display-medium-line-height: 52px;
+  --md-sys-typescale-display-medium-weight: 600;
+  --md-sys-typescale-display-medium-tracking: 0;
+  
+  --md-sys-typescale-display-small-font: 'Fredoka', system-ui, sans-serif;
+  --md-sys-typescale-display-small-size: 36px;
+  --md-sys-typescale-display-small-line-height: 44px;
+  --md-sys-typescale-display-small-weight: 500;
+  --md-sys-typescale-display-small-tracking: 0;
+  
+  --md-sys-typescale-headline-large-font: 'Fredoka', system-ui, sans-serif;
+  --md-sys-typescale-headline-large-size: 32px;
+  --md-sys-typescale-headline-large-line-height: 40px;
+  --md-sys-typescale-headline-large-weight: 500;
+  --md-sys-typescale-headline-large-tracking: 0;
+  
+  --md-sys-typescale-headline-medium-font: 'Fredoka', system-ui, sans-serif;
+  --md-sys-typescale-headline-medium-size: 28px;
+  --md-sys-typescale-headline-medium-line-height: 36px;
+  --md-sys-typescale-headline-medium-weight: 500;
+  --md-sys-typescale-headline-medium-tracking: 0;
+  
+  --md-sys-typescale-headline-small-font: 'Fredoka', system-ui, sans-serif;
+  --md-sys-typescale-headline-small-size: 24px;
+  --md-sys-typescale-headline-small-line-height: 32px;
+  --md-sys-typescale-headline-small-weight: 400;
+  --md-sys-typescale-headline-small-tracking: 0;
+  
+  --md-sys-typescale-title-large-font: 'Nunito', 'Roboto', system-ui, sans-serif;
+  --md-sys-typescale-title-large-size: 22px;
+  --md-sys-typescale-title-large-line-height: 28px;
+  --md-sys-typescale-title-large-weight: 500;
+  --md-sys-typescale-title-large-tracking: 0;
+  
+  --md-sys-typescale-title-medium-font: 'Nunito', 'Roboto', system-ui, sans-serif;
+  --md-sys-typescale-title-medium-size: 16px;
+  --md-sys-typescale-title-medium-line-height: 24px;
+  --md-sys-typescale-title-medium-weight: 500;
+  --md-sys-typescale-title-medium-tracking: 0.15px;
+  
+  --md-sys-typescale-title-small-font: 'Nunito', 'Roboto', system-ui, sans-serif;
+  --md-sys-typescale-title-small-size: 14px;
+  --md-sys-typescale-title-small-line-height: 20px;
+  --md-sys-typescale-title-small-weight: 500;
+  --md-sys-typescale-title-small-tracking: 0.1px;
+  
+  --md-sys-typescale-body-large-font: 'Nunito', 'Roboto', system-ui, sans-serif;
+  --md-sys-typescale-body-large-size: 16px;
+  --md-sys-typescale-body-large-line-height: 24px;
+  --md-sys-typescale-body-large-weight: 400;
+  --md-sys-typescale-body-large-tracking: 0.5px;
+  
+  --md-sys-typescale-body-medium-font: 'Nunito', 'Roboto', system-ui, sans-serif;
+  --md-sys-typescale-body-medium-size: 14px;
+  --md-sys-typescale-body-medium-line-height: 20px;
+  --md-sys-typescale-body-medium-weight: 400;
+  --md-sys-typescale-body-medium-tracking: 0.25px;
+  
+  --md-sys-typescale-body-small-font: 'Nunito', 'Roboto', system-ui, sans-serif;
+  --md-sys-typescale-body-small-size: 12px;
+  --md-sys-typescale-body-small-line-height: 16px;
+  --md-sys-typescale-body-small-weight: 400;
+  --md-sys-typescale-body-small-tracking: 0.4px;
+  
+  --md-sys-typescale-label-large-font: 'Nunito', 'Roboto', system-ui, sans-serif;
+  --md-sys-typescale-label-large-size: 14px;
+  --md-sys-typescale-label-large-line-height: 20px;
+  --md-sys-typescale-label-large-weight: 500;
+  --md-sys-typescale-label-large-tracking: 0.1px;
+  
+  --md-sys-typescale-label-medium-font: 'Nunito', 'Roboto', system-ui, sans-serif;
+  --md-sys-typescale-label-medium-size: 12px;
+  --md-sys-typescale-label-medium-line-height: 16px;
+  --md-sys-typescale-label-medium-weight: 500;
+  --md-sys-typescale-label-medium-tracking: 0.5px;
+  
+  --md-sys-typescale-label-small-font: 'Nunito', 'Roboto', system-ui, sans-serif;
+  --md-sys-typescale-label-small-size: 11px;
+  --md-sys-typescale-label-small-line-height: 16px;
+  --md-sys-typescale-label-small-weight: 500;
+  --md-sys-typescale-label-small-tracking: 0.5px;
+}
+
+/* ================================================================
+   3. ELEVATION SYSTEM - Material Design 3 Levels
+   ================================================================ */
+
+:root {
+  /* Elevation levels with tonal color overlays */
+  --md-sys-elevation-level0: 0px;
+  --md-sys-elevation-level1: 1px;
+  --md-sys-elevation-level2: 3px;
+  --md-sys-elevation-level3: 6px;
+  --md-sys-elevation-level4: 8px;
+  --md-sys-elevation-level5: 12px;
+  
+  /* Box shadows for each elevation level */
+  --md-sys-elevation-shadow-level0: none;
+  --md-sys-elevation-shadow-level1: 
+    0px 1px 2px rgba(0, 0, 0, 0.3),
+    0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+  --md-sys-elevation-shadow-level2: 
+    0px 1px 2px rgba(0, 0, 0, 0.3),
+    0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+  --md-sys-elevation-shadow-level3: 
+    0px 1px 3px rgba(0, 0, 0, 0.3),
+    0px 4px 8px 3px rgba(0, 0, 0, 0.15);
+  --md-sys-elevation-shadow-level4: 
+    0px 2px 3px rgba(0, 0, 0, 0.3),
+    0px 6px 10px 4px rgba(0, 0, 0, 0.15);
+  --md-sys-elevation-shadow-level5: 
+    0px 4px 4px rgba(0, 0, 0, 0.3),
+    0px 8px 12px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* ================================================================
+   4. SHAPE SYSTEM - Rounded corners and surfaces
+   ================================================================ */
+
+:root {
+  /* Corner radius tokens */
+  --md-sys-shape-corner-none: 0px;
+  --md-sys-shape-corner-extra-small: 4px;
+  --md-sys-shape-corner-small: 8px;
+  --md-sys-shape-corner-medium: 12px;
+  --md-sys-shape-corner-large: 16px;
+  --md-sys-shape-corner-extra-large: 28px;
+  --md-sys-shape-corner-full: 9999px;
+  
+  /* Component-specific shapes */
+  --md-sys-shape-button: var(--md-sys-shape-corner-full);
+  --md-sys-shape-card: var(--md-sys-shape-corner-large);
+  --md-sys-shape-dialog: var(--md-sys-shape-corner-extra-large);
+  --md-sys-shape-chip: var(--md-sys-shape-corner-small);
+  --md-sys-shape-text-field: var(--md-sys-shape-corner-extra-small);
+  --md-sys-shape-fab: var(--md-sys-shape-corner-large);
+  --md-sys-shape-navigation-drawer: var(--md-sys-shape-corner-large);
+}
+
+/* ================================================================
+   5. STATE SYSTEM - Interactive states
+   ================================================================ */
+
+:root {
+  /* State layer opacities */
+  --md-sys-state-hover-opacity: 0.08;
+  --md-sys-state-focus-opacity: 0.12;
+  --md-sys-state-pressed-opacity: 0.12;
+  --md-sys-state-dragged-opacity: 0.16;
+  --md-sys-state-disabled-opacity: 0.38;
+  
+  /* State layer colors */
+  --md-sys-state-hover-color: var(--md-sys-color-on-surface);
+  --md-sys-state-focus-color: var(--md-sys-color-on-surface);
+  --md-sys-state-pressed-color: var(--md-sys-color-on-surface);
+  --md-sys-state-dragged-color: var(--md-sys-color-on-surface);
+}
+
+/* ================================================================
+   6. MOTION SYSTEM - Material Design animations
+   ================================================================ */
+
+:root {
+  /* Duration tokens */
+  --md-sys-motion-duration-short1: 50ms;
+  --md-sys-motion-duration-short2: 100ms;
+  --md-sys-motion-duration-short3: 150ms;
+  --md-sys-motion-duration-short4: 200ms;
+  --md-sys-motion-duration-medium1: 250ms;
+  --md-sys-motion-duration-medium2: 300ms;
+  --md-sys-motion-duration-medium3: 350ms;
+  --md-sys-motion-duration-medium4: 400ms;
+  --md-sys-motion-duration-long1: 450ms;
+  --md-sys-motion-duration-long2: 500ms;
+  --md-sys-motion-duration-long3: 550ms;
+  --md-sys-motion-duration-long4: 600ms;
+  --md-sys-motion-duration-extra-long1: 700ms;
+  --md-sys-motion-duration-extra-long2: 800ms;
+  --md-sys-motion-duration-extra-long3: 900ms;
+  --md-sys-motion-duration-extra-long4: 1000ms;
+  
+  /* Easing tokens */
+  --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-easing-standard-decelerate: cubic-bezier(0, 0, 0, 1);
+  --md-sys-motion-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --md-sys-motion-easing-legacy: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ================================================================
+   7. SPACING SYSTEM - Material Design 3 spacing scale
+   ================================================================ */
+
+:root {
+  /* Spacing scale (8dp baseline) */
+  --md-sys-spacing-0: 0px;
+  --md-sys-spacing-1: 4px;
+  --md-sys-spacing-2: 8px;
+  --md-sys-spacing-3: 12px;
+  --md-sys-spacing-4: 16px;
+  --md-sys-spacing-5: 20px;
+  --md-sys-spacing-6: 24px;
+  --md-sys-spacing-7: 28px;
+  --md-sys-spacing-8: 32px;
+  --md-sys-spacing-9: 36px;
+  --md-sys-spacing-10: 40px;
+  --md-sys-spacing-12: 48px;
+  --md-sys-spacing-14: 56px;
+  --md-sys-spacing-16: 64px;
+  --md-sys-spacing-20: 80px;
+  --md-sys-spacing-24: 96px;
+  
+  /* Component-specific spacing */
+  --md-sys-spacing-button-padding-horizontal: var(--md-sys-spacing-6);
+  --md-sys-spacing-button-padding-vertical: var(--md-sys-spacing-2);
+  --md-sys-spacing-card-padding: var(--md-sys-spacing-4);
+  --md-sys-spacing-dialog-padding: var(--md-sys-spacing-6);
+  --md-sys-spacing-list-item-padding: var(--md-sys-spacing-4);
+}
+
+/* ================================================================
+   8. TOUCH TARGET SYSTEM - Accessibility compliance
+   ================================================================ */
+
+:root {
+  /* Minimum touch target sizes (WCAG AA compliance) */
+  --md-sys-touch-target-min-size: 48px;
+  --md-sys-touch-target-spacing: 8px;
+  
+  /* Component touch targets */
+  --md-sys-touch-target-button: var(--md-sys-touch-target-min-size);
+  --md-sys-touch-target-icon-button: var(--md-sys-touch-target-min-size);
+  --md-sys-touch-target-chip: 32px;
+  --md-sys-touch-target-switch: 48px;
+  --md-sys-touch-target-checkbox: var(--md-sys-touch-target-min-size);
+  --md-sys-touch-target-radio: var(--md-sys-touch-target-min-size);
+}
+
+/* ================================================================
+   9. UTILITY CLASSES - Apply Material Design tokens
+   ================================================================ */
+
+/* Typography utilities */
+.display-large {
+  font-family: var(--md-sys-typescale-display-large-font);
+  font-size: var(--md-sys-typescale-display-large-size);
+  line-height: var(--md-sys-typescale-display-large-line-height);
+  font-weight: var(--md-sys-typescale-display-large-weight);
+  letter-spacing: var(--md-sys-typescale-display-large-tracking);
+}
+
+.display-medium {
+  font-family: var(--md-sys-typescale-display-medium-font);
+  font-size: var(--md-sys-typescale-display-medium-size);
+  line-height: var(--md-sys-typescale-display-medium-line-height);
+  font-weight: var(--md-sys-typescale-display-medium-weight);
+  letter-spacing: var(--md-sys-typescale-display-medium-tracking);
+}
+
+.display-small {
+  font-family: var(--md-sys-typescale-display-small-font);
+  font-size: var(--md-sys-typescale-display-small-size);
+  line-height: var(--md-sys-typescale-display-small-line-height);
+  font-weight: var(--md-sys-typescale-display-small-weight);
+  letter-spacing: var(--md-sys-typescale-display-small-tracking);
+}
+
+.headline-large {
+  font-family: var(--md-sys-typescale-headline-large-font);
+  font-size: var(--md-sys-typescale-headline-large-size);
+  line-height: var(--md-sys-typescale-headline-large-line-height);
+  font-weight: var(--md-sys-typescale-headline-large-weight);
+  letter-spacing: var(--md-sys-typescale-headline-large-tracking);
+}
+
+.headline-medium {
+  font-family: var(--md-sys-typescale-headline-medium-font);
+  font-size: var(--md-sys-typescale-headline-medium-size);
+  line-height: var(--md-sys-typescale-headline-medium-line-height);
+  font-weight: var(--md-sys-typescale-headline-medium-weight);
+  letter-spacing: var(--md-sys-typescale-headline-medium-tracking);
+}
+
+.headline-small {
+  font-family: var(--md-sys-typescale-headline-small-font);
+  font-size: var(--md-sys-typescale-headline-small-size);
+  line-height: var(--md-sys-typescale-headline-small-line-height);
+  font-weight: var(--md-sys-typescale-headline-small-weight);
+  letter-spacing: var(--md-sys-typescale-headline-small-tracking);
+}
+
+.title-large {
+  font-family: var(--md-sys-typescale-title-large-font);
+  font-size: var(--md-sys-typescale-title-large-size);
+  line-height: var(--md-sys-typescale-title-large-line-height);
+  font-weight: var(--md-sys-typescale-title-large-weight);
+  letter-spacing: var(--md-sys-typescale-title-large-tracking);
+}
+
+.title-medium {
+  font-family: var(--md-sys-typescale-title-medium-font);
+  font-size: var(--md-sys-typescale-title-medium-size);
+  line-height: var(--md-sys-typescale-title-medium-line-height);
+  font-weight: var(--md-sys-typescale-title-medium-weight);
+  letter-spacing: var(--md-sys-typescale-title-medium-tracking);
+}
+
+.title-small {
+  font-family: var(--md-sys-typescale-title-small-font);
+  font-size: var(--md-sys-typescale-title-small-size);
+  line-height: var(--md-sys-typescale-title-small-line-height);
+  font-weight: var(--md-sys-typescale-title-small-weight);
+  letter-spacing: var(--md-sys-typescale-title-small-tracking);
+}
+
+.body-large {
+  font-family: var(--md-sys-typescale-body-large-font);
+  font-size: var(--md-sys-typescale-body-large-size);
+  line-height: var(--md-sys-typescale-body-large-line-height);
+  font-weight: var(--md-sys-typescale-body-large-weight);
+  letter-spacing: var(--md-sys-typescale-body-large-tracking);
+}
+
+.body-medium {
+  font-family: var(--md-sys-typescale-body-medium-font);
+  font-size: var(--md-sys-typescale-body-medium-size);
+  line-height: var(--md-sys-typescale-body-medium-line-height);
+  font-weight: var(--md-sys-typescale-body-medium-weight);
+  letter-spacing: var(--md-sys-typescale-body-medium-tracking);
+}
+
+.body-small {
+  font-family: var(--md-sys-typescale-body-small-font);
+  font-size: var(--md-sys-typescale-body-small-size);
+  line-height: var(--md-sys-typescale-body-small-line-height);
+  font-weight: var(--md-sys-typescale-body-small-weight);
+  letter-spacing: var(--md-sys-typescale-body-small-tracking);
+}
+
+.label-large {
+  font-family: var(--md-sys-typescale-label-large-font);
+  font-size: var(--md-sys-typescale-label-large-size);
+  line-height: var(--md-sys-typescale-label-large-line-height);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  letter-spacing: var(--md-sys-typescale-label-large-tracking);
+}
+
+.label-medium {
+  font-family: var(--md-sys-typescale-label-medium-font);
+  font-size: var(--md-sys-typescale-label-medium-size);
+  line-height: var(--md-sys-typescale-label-medium-line-height);
+  font-weight: var(--md-sys-typescale-label-medium-weight);
+  letter-spacing: var(--md-sys-typescale-label-medium-tracking);
+}
+
+.label-small {
+  font-family: var(--md-sys-typescale-label-small-font);
+  font-size: var(--md-sys-typescale-label-small-size);
+  line-height: var(--md-sys-typescale-label-small-line-height);
+  font-weight: var(--md-sys-typescale-label-small-weight);
+  letter-spacing: var(--md-sys-typescale-label-small-tracking);
+}
+
+/* Elevation utilities */
+.elevation-0 { box-shadow: var(--md-sys-elevation-shadow-level0); }
+.elevation-1 { box-shadow: var(--md-sys-elevation-shadow-level1); }
+.elevation-2 { box-shadow: var(--md-sys-elevation-shadow-level2); }
+.elevation-3 { box-shadow: var(--md-sys-elevation-shadow-level3); }
+.elevation-4 { box-shadow: var(--md-sys-elevation-shadow-level4); }
+.elevation-5 { box-shadow: var(--md-sys-elevation-shadow-level5); }
+
+/* Surface containers */
+.surface-container-lowest { background-color: var(--md-sys-color-surface-container-lowest); }
+.surface-container-low { background-color: var(--md-sys-color-surface-container-low); }
+.surface-container { background-color: var(--md-sys-color-surface-container); }
+.surface-container-high { background-color: var(--md-sys-color-surface-container-high); }
+.surface-container-highest { background-color: var(--md-sys-color-surface-container-highest); }
+
+/* State layers */
+.state-layer {
+  position: relative;
+  overflow: hidden;
+}
+
+.state-layer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+  pointer-events: none;
+}
+
+.state-layer:hover::before {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.state-layer:focus-visible::before {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+.state-layer:active::before {
+  opacity: var(--md-sys-state-pressed-opacity);
+}
+
+/* Material ripple effect */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-effect {
+  position: absolute;
+  border-radius: 50%;
+  background-color: currentColor;
+  opacity: 0;
+  animation: ripple-animation var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-standard);
+  pointer-events: none;
+}
+
+@keyframes ripple-animation {
+  0% {
+    transform: scale(0);
+    opacity: var(--md-sys-state-pressed-opacity);
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* ================================================================
+   10. COMPONENT STYLES - Material Design 3 components
+   ================================================================ */
+
+/* Buttons */
+.md-button {
+  min-height: var(--md-sys-touch-target-button);
+  padding: var(--md-sys-spacing-button-padding-vertical) var(--md-sys-spacing-button-padding-horizontal);
+  border-radius: var(--md-sys-shape-button);
+  font-family: var(--md-sys-typescale-label-large-font);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  letter-spacing: var(--md-sys-typescale-label-large-tracking);
+  transition: all var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+/* Cards */
+.md-card {
+  border-radius: var(--md-sys-shape-card);
+  padding: var(--md-sys-spacing-card-padding);
+  background-color: var(--md-sys-color-surface-container-low);
+  transition: all var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+}
+
+/* Chips */
+.md-chip {
+  min-height: var(--md-sys-touch-target-chip);
+  border-radius: var(--md-sys-shape-chip);
+  padding: var(--md-sys-spacing-2) var(--md-sys-spacing-4);
+  font-family: var(--md-sys-typescale-label-large-font);
+  font-size: var(--md-sys-typescale-label-large-size);
+  transition: all var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+/* FAB */
+.md-fab {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--md-sys-shape-fab);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  box-shadow: var(--md-sys-elevation-shadow-level3);
+  transition: all var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.md-fab:hover {
+  box-shadow: var(--md-sys-elevation-shadow-level4);
+}
+
+/* ================================================================
+   11. RESPONSIVE BREAKPOINTS
+   ================================================================ */
+
+/* Material Design breakpoints */
+:root {
+  --md-sys-breakpoint-compact: 0px;
+  --md-sys-breakpoint-medium: 600px;
+  --md-sys-breakpoint-expanded: 840px;
+  --md-sys-breakpoint-large: 1240px;
+  --md-sys-breakpoint-extra-large: 1440px;
+}
+
+/* ================================================================
+   12. ACCESSIBILITY FEATURES
+   ================================================================ */
+
+/* Focus indicators */
+:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  :root {
+    --md-sys-color-outline: #000000;
+    --md-sys-color-outline-variant: #666666;
+  }
+  
+  [data-theme="dark"] {
+    --md-sys-color-outline: #ffffff;
+    --md-sys-color-outline-variant: #cccccc;
+  }
+}

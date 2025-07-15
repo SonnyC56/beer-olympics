@@ -736,6 +736,84 @@ export const enhancedMatchRouter = router({
           message: 'Failed to fetch match timeline',
         });
       }
+    }),
+
+  // Get active matches for spectator mode
+  getActiveMatches: publicProcedure
+    .input(z.object({
+      tournamentId: z.string()
+    }))
+    .query(async ({ input }) => {
+      try {
+        const result = await query(
+          `SELECT m.*, 
+           e.name as gameName, e.icon as gameIcon, e.rules as gameRules,
+           s.name as stationName, s.location as stationLocation,
+           ta.name as teamAName, ta.color as teamAColor, ta.avatarUrl as teamAAvatar,
+           tb.name as teamBName, tb.color as teamBColor, tb.avatarUrl as teamBAvatar
+           FROM \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default m
+           LEFT JOIN \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default e ON e.id = m.eventId
+           LEFT JOIN \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default s ON s.id = m.stationId
+           LEFT JOIN \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default ta ON ta.id = m.teamA
+           LEFT JOIN \`${process.env.COUCHBASE_BUCKET || 'beer_olympics'}\`._default._default tb ON tb.id = m.teamB
+           WHERE m._type = 'match' 
+           AND m.tournamentId = $1
+           AND m.isComplete = false
+           AND m.startTime IS NOT NULL
+           ORDER BY m.startTime DESC`,
+          { parameters: [input.tournamentId] }
+        );
+        
+        // Transform the data for spectator view
+        return result.rows.map((row: any) => ({
+          id: row.id,
+          status: 'in_progress' as const,
+          startedAt: row.startTime,
+          station: {
+            id: row.stationId || 'default',
+            name: row.stationName || 'Station',
+            location: row.stationLocation
+          },
+          game: {
+            id: row.eventId || 'default',
+            name: row.gameName || 'Game',
+            icon: row.gameIcon,
+            rules: row.gameRules
+          },
+          teams: [
+            row.teamA ? {
+              id: row.teamA,
+              name: row.teamAName || 'Team A',
+              color: row.teamAColor || '#3B82F6',
+              avatar: row.teamAAvatar
+            } : null,
+            row.teamB ? {
+              id: row.teamB,
+              name: row.teamBName || 'Team B',
+              color: row.teamBColor || '#EF4444',
+              avatar: row.teamBAvatar
+            } : null
+          ].filter(Boolean),
+          scores: [
+            row.teamA ? {
+              teamId: row.teamA,
+              score: row.finalScore?.a || 0,
+              position: (row.finalScore?.a || 0) >= (row.finalScore?.b || 0) ? 1 : 2
+            } : null,
+            row.teamB ? {
+              teamId: row.teamB,
+              score: row.finalScore?.b || 0,
+              position: (row.finalScore?.b || 0) > (row.finalScore?.a || 0) ? 1 : 2
+            } : null
+          ].filter(Boolean),
+          highlights: [] // Could be populated from media
+        }));
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch active matches',
+        });
+      }
     })
 });
 

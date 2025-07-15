@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/material/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/material/card';
+import { TextField } from '@/components/ui/material/text-field';
+import { FAB } from '@/components/ui/material/fab';
 
 export function HomePage() {
   const [tournamentCode, setTournamentCode] = useState('');
@@ -32,17 +33,17 @@ export function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <header className="text-center mb-12">
-        <h1 className="text-7xl font-party font-bold text-neutral-0 text-shadow-lg">
+      <header className="text-center mb-12 material-header-animation">
+        <h1 className="text-7xl font-party font-bold text-neutral-0 text-shadow-lg material-display-large">
           Beer Olympics
         </h1>
-        <p className="text-2xl text-neutral-0/90 mt-2 text-shadow">
+        <p className="text-2xl text-neutral-0/90 mt-2 text-shadow material-title-large">
           Transform your backyard games into professional tournaments with real-time scoring and leaderboards
         </p>
       </header>
 
       <main className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full">
-        <Card>
+        <Card variant="elevated" elevation={2} className="material-motion-standard-decelerate">
           <CardHeader>
             <CardTitle>Join Tournament</CardTitle>
             <CardDescription>
@@ -50,18 +51,21 @@ export function HomePage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <Input
+            <TextField
+              label="Tournament Code"
               placeholder="Enter tournament code"
               value={tournamentCode}
               onChange={(e) => setTournamentCode(e.target.value)}
+              fullWidth
+              leadingIcon="sports_esports"
             />
-            <Button onClick={handleJoinTournament} variant="secondary">
+            <Button onClick={handleJoinTournament} variant="filled" size="large" fullWidth leadingIcon="login">
               Join Tournament
             </Button>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card variant="elevated" elevation={2} className="material-motion-standard-decelerate">
           <CardHeader>
             <CardTitle>Create Tournament</CardTitle>
             <CardDescription>
@@ -69,7 +73,7 @@ export function HomePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={handleCreateTournament} variant="tertiary" className="w-full">
+            <Button onClick={handleCreateTournament} variant="tonal" size="large" fullWidth leadingIcon="add_circle">
               Create Tournament
             </Button>
           </CardContent>
@@ -82,52 +86,62 @@ export function HomePage() {
           🎨 Test Our New Features! 🎉
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="card-party">
+          <Card variant="filled" className="material-surface-container-high material-motion-standard">
             <CardHeader>
-              <CardTitle className="font-beer">🎨 STYLE GUIDE</CardTitle>
+              <CardTitle>🎨 STYLE GUIDE</CardTitle>
               <CardDescription>
                 Explore our fun & playful design system!
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={handleStyleGuide} className="btn-party w-full">
+              <Button onClick={handleStyleGuide} variant="elevated" fullWidth leadingIcon="palette">
                 View Style Guide
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="card-beer">
+          <Card variant="filled" className="material-surface-container-high material-motion-standard">
             <CardHeader>
-              <CardTitle className="font-beer">📋 RSVP PAGE</CardTitle>
+              <CardTitle>📋 RSVP PAGE</CardTitle>
               <CardDescription>
                 Try our fully functional RSVP form with preferred partner field! All data saves locally.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={handleRSVP} className="btn-beer w-full">
+              <Button onClick={handleRSVP} variant="elevated" fullWidth leadingIcon="event_available">
                 Test RSVP Form
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="card-victory lg:col-span-2">
+          <Card variant="elevated" elevation={3} className="lg:col-span-2 material-motion-emphasized">
             <CardHeader>
-              <CardTitle className="font-beer flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2">
                 🏆 TOURNAMENT MANAGEMENT
-                <span className="bg-gradient-party text-white px-2 py-1 rounded-full text-xs">NEW!</span>
+                <span className="material-badge-new px-3 py-1 rounded-full text-xs font-medium">NEW!</span>
               </CardTitle>
               <CardDescription>
                 Experience our brand new tournament management system with live leaderboards, bracket visualization, game configuration, and social features!
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={handleDemoTournament} className="btn-victory w-full">
+              <Button onClick={handleDemoTournament} variant="filled" size="large" fullWidth leadingIcon="emoji_events">
                 View Demo Tournament
               </Button>
             </CardContent>
           </Card>
         </div>
       </section>
+      
+      {/* Floating Action Button for quick tournament creation */}
+      <FAB
+        icon="add"
+        label="Create"
+        onClick={handleCreateTournament}
+        variant="primary"
+        size="large"
+        position="bottom-right"
+      />
     </div>
   );
 }

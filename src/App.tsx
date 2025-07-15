@@ -24,6 +24,8 @@ import { RSVPManagementPage } from './pages/RSVPManagementPage';
 import TournamentManagePage from './pages/TournamentManagePage';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { Material3Demo } from './pages/Material3Demo';
+import { SpectatorPage } from './pages/SpectatorPage';
+import { CheckInPage } from './pages/CheckInPage';
 
 const pageVariants = {
   initial: {
@@ -110,6 +112,8 @@ function App() {
                   <Route path="/manage/:slug" element={wrapWithLayout(TournamentManagePage)} />
                   <Route path="/admin/:slug" element={wrapWithLayout(AdminDashboard)} />
                   <Route path="/material3" element={wrapWithLayout(Material3Demo)} />
+                  <Route path="/spectator/:slug" element={wrapWithLayout(SpectatorPage)} />
+                  <Route path="/checkin/:tournamentSlug" element={wrapWithLayout(CheckInPage)} />
                 </Routes>
                 <Toaster theme="dark" position="top-center" />
               </div>

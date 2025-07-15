@@ -17,7 +17,7 @@ export const queryClient = new QueryClient({
 const getBaseUrl = () => {
   if (typeof window !== 'undefined') {
     // In production, use relative URL
-    if (import.meta.env.PROD) {
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
       return '';
     }
     // In development, use current origin (Vite dev server)

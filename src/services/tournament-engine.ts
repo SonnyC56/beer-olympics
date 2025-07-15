@@ -9,6 +9,16 @@ import FFA from 'ffa';
 import Masters from 'masters';
 import Tiebreaker from 'tiebreaker';
 import roundrobin from 'roundrobin';
+import { SwissTournamentService } from './swiss-tournament';
+import { SchedulingEngine } from './scheduling-engine';
+import type { 
+  Station, 
+  ScheduleSlot, 
+  SchedulingConfig, 
+  ScheduleResult,
+  SchedulingConstraint,
+  ScheduledMatch
+} from '../types/scheduling';
 
 export type TournamentFormat = 
   | 'single_elimination' 
@@ -59,6 +69,10 @@ export class TournamentEngine {
   private tournament: any = null;
   private config: TournamentConfig;
   private playerMap: Map<number, string> = new Map();
+  private schedulingEngine: SchedulingEngine | null = null;
+  private stations: Station[] = [];
+  private schedule: ScheduleSlot[] = [];
+  private swissEngine: SwissTournamentService | null = null;
 
   constructor(config: TournamentConfig) {
     this.config = config;
@@ -126,6 +140,15 @@ export class TournamentEngine {
         // We'll handle it separately with the roundrobin package
         break;
 
+      case 'swiss':
+        // Swiss tournament uses custom service
+        const teams = Array.from(this.playerMap.entries()).map(([seed, name]) => ({
+          id: String(seed),
+          name
+        }));
+        this.swissEngine = new SwissTournamentService(teams, this.config.maxRounds);
+        break;
+
       default:
         throw new Error(`Unsupported tournament format: ${format}`);
     }
@@ -137,6 +160,10 @@ export class TournamentEngine {
   getMatches(): TournamentMatch[] {
     if (this.config.format === 'round_robin') {
       return this.getRoundRobinMatches();
+    }
+
+    if (this.config.format === 'swiss') {
+      return this.getSwissMatches();
     }
 
     if (!this.tournament) {
@@ -194,6 +221,28 @@ export class TournamentEngine {
       return true;
     }
 
+    if (this.config.format === 'swiss' && this.swissEngine) {
+      // Find the match and determine winner
+      const matches = this.getSwissMatches();
+      const match = matches.find(m => 
+        m.id.s === matchId.s && m.id.r === matchId.r && m.id.m === matchId.m
+      );
+      
+      if (match && match.p[0] !== null && match.p[1] !== null) {
+        const player1Id = String(match.p[0]);
+        const player2Id = match.p[1] === null ? null : String(match.p[1]);
+        let winner: string | null = null;
+        
+        if (scores[0] > scores[1]) winner = player1Id;
+        else if (scores[1] > scores[0]) winner = player2Id;
+        // null winner = draw
+        
+        this.swissEngine.updateMatchResult(player1Id, player2Id, winner);
+        return true;
+      }
+      return false;
+    }
+
     if (!this.tournament) {
       throw new Error('Tournament not initialized');
     }
@@ -212,6 +261,24 @@ export class TournamentEngine {
   getResults(): TournamentResults {
     if (this.config.format === 'round_robin') {
       return this.getRoundRobinResults();
+    }
+
+    if (this.config.format === 'swiss' && this.swissEngine) {
+      const standings = this.swissEngine.getStandings();
+      
+      return {
+        results: standings.map(standing => ({
+          seed: Number(standing.teamId),
+          name: this.playerMap.get(Number(standing.teamId)) || `Player ${standing.teamId}`,
+          wins: standing.wins,
+          for: standing.points,
+          against: 0, // Swiss doesn't track this
+          pos: standing.position
+        })),
+        complete: this.swissEngine.isComplete(),
+        currentRound: this.getCurrentRound(),
+        totalRounds: this.config.maxRounds || 7
+      };
     }
 
     if (!this.tournament) {
@@ -283,6 +350,10 @@ export class TournamentEngine {
    * Get total number of rounds
    */
   getTotalRounds(): number {
+    if (this.config.format === 'swiss') {
+      return this.config.maxRounds || 7;
+    }
+    
     if (!this.tournament) return 1;
     
     return Math.max(...this.tournament.matches.map((m: any) => m.id.r));
@@ -295,6 +366,10 @@ export class TournamentEngine {
     if (this.config.format === 'round_robin') {
       // Check if all round robin matches are complete
       return false; // Simplified for now
+    }
+
+    if (this.config.format === 'swiss' && this.swissEngine) {
+      return this.swissEngine.isComplete();
     }
 
     return this.tournament ? this.tournament.isDone() : false;
@@ -379,6 +454,72 @@ export class TournamentEngine {
   }
 
   /**
+   * Swiss-specific methods
+   */
+  private getSwissMatches(): TournamentMatch[] {
+    if (!this.swissEngine) return [];
+    
+    const allMatches: TournamentMatch[] = [];
+    const currentRound = this.getCurrentRound();
+    
+    // Generate pairings for completed rounds and current round
+    for (let round = 1; round <= currentRound; round++) {
+      let pairings = this.swissEngine.getRoundPairings(round);
+      
+      // If no pairings exist for this round, generate them
+      if (pairings.length === 0 && round <= (this.config.maxRounds || 7)) {
+        pairings = this.swissEngine.generatePairings(round);
+      }
+      
+      // Convert Swiss pairings to tournament matches
+      pairings.forEach((pairing, index) => {
+        allMatches.push({
+          id: { s: 1, r: round, m: index + 1 },
+          p: [
+            pairing.player1 ? Number(pairing.player1) : null,
+            pairing.player2 ? Number(pairing.player2) : null
+          ],
+          m: undefined, // Scores will be set when match is scored
+          winners: undefined
+        });
+      });
+    }
+    
+    return allMatches;
+  }
+
+  /**
+   * Generate next round for Swiss tournament
+   */
+  generateSwissNextRound(): TournamentMatch[] {
+    if (!this.swissEngine) return [];
+    
+    const currentRound = this.getCurrentRound();
+    const nextRound = currentRound + 1;
+    
+    if (nextRound > (this.config.maxRounds || 7)) {
+      return []; // Tournament complete
+    }
+    
+    const pairings = this.swissEngine.generatePairings(nextRound);
+    const matches = this.swissEngine.pairingsToMatches(
+      pairings,
+      this.stations.map(s => s.id),
+      { id: 'default' } // Game info
+    );
+    
+    return matches.map((match, index) => ({
+      id: { s: 1, r: nextRound, m: index + 1 },
+      p: [
+        match.teamA ? Number(match.teamA) : null,
+        match.teamB === 'BYE' ? null : Number(match.teamB)
+      ],
+      m: match.isComplete ? [1, 0] : undefined, // Bye matches auto-score
+      winners: match.winner ? [Number(match.winner)] : undefined
+    }));
+  }
+
+  /**
    * Handle tiebreakers if needed
    */
   resolveTiebreaker(players: number[], method: 'head2head' | 'total' = 'head2head'): number[] {
@@ -409,7 +550,8 @@ export class TournamentEngine {
       tournamentState: this.tournament ? {
         matches: this.tournament.matches,
         results: this.tournament.results()
-      } : null
+      } : null,
+      swissState: this.swissEngine ? this.swissEngine.exportData() : null
     };
   }
 
@@ -432,6 +574,241 @@ export class TournamentEngine {
       });
     }
     
+    // Restore Swiss state
+    if (state.swissState && engine.swissEngine) {
+      engine.swissEngine.importData(state.swissState);
+    }
+    
+    // Restore stations and schedule if present
+    if (state.stations) {
+      engine.stations = state.stations;
+    }
+    if (state.schedule) {
+      engine.schedule = state.schedule;
+    }
+    
     return engine;
+  }
+
+  /**
+   * Station Management Methods
+   */
+
+  /**
+   * Initialize stations for the tournament
+   */
+  initializeStations(stations: Station[]): void {
+    this.stations = stations;
+    if (this.schedulingEngine) {
+      this.schedulingEngine.initializeStations(stations);
+    }
+  }
+
+  /**
+   * Add a new station
+   */
+  addStation(station: Station): void {
+    this.stations.push(station);
+    if (this.schedulingEngine) {
+      this.schedulingEngine.initializeStations(this.stations);
+    }
+  }
+
+  /**
+   * Update station status
+   */
+  updateStationStatus(stationId: string, status: Station['status']): void {
+    const station = this.stations.find(s => s.id === stationId);
+    if (station) {
+      station.status = status;
+      station.updatedAt = new Date().toISOString();
+    }
+  }
+
+  /**
+   * Get all stations
+   */
+  getStations(): Station[] {
+    return this.stations;
+  }
+
+  /**
+   * Get available stations
+   */
+  getAvailableStations(): Station[] {
+    return this.stations.filter(s => s.status === 'available' && s.isActive);
+  }
+
+  /**
+   * Scheduling Methods
+   */
+
+  /**
+   * Initialize scheduling engine with config
+   */
+  initializeScheduling(config: SchedulingConfig): void {
+    this.schedulingEngine = new SchedulingEngine(config);
+    if (this.stations.length > 0) {
+      this.schedulingEngine.initializeStations(this.stations);
+    }
+  }
+
+  /**
+   * Generate schedule for all matches
+   */
+  async generateSchedule(
+    schedulingConfig: SchedulingConfig,
+    constraints: SchedulingConstraint[] = []
+  ): Promise<ScheduleResult> {
+    if (!this.schedulingEngine) {
+      this.initializeScheduling(schedulingConfig);
+    }
+
+    const matches = this.getMatches();
+    const tournamentMatches = matches.map(m => ({
+      ...m,
+      _type: 'match' as const,
+      id: `${m.id.s}-${m.id.r}-${m.id.m}`,
+      tournamentId: 'current', // This would be set properly in real implementation
+      round: m.id.r,
+      isComplete: !!m.m,
+      createdAt: new Date().toISOString()
+    }));
+
+    const result = await this.schedulingEngine!.generateSchedule(
+      tournamentMatches as any[], // Type assertion for simplicity
+      constraints
+    );
+
+    if (result.success) {
+      this.schedule = result.schedule;
+    }
+
+    return result;
+  }
+
+  /**
+   * Get schedule for specific round
+   */
+  getScheduleForRound(round: number): ScheduleSlot[] {
+    return this.schedule.filter(slot => slot.round === round);
+  }
+
+  /**
+   * Get schedule for specific station
+   */
+  getScheduleForStation(stationId: string): ScheduleSlot[] {
+    return this.schedule.filter(slot => slot.stationId === stationId);
+  }
+
+  /**
+   * Update match with scheduled time and station
+   */
+  assignMatchToSlot(matchId: string, slotId: string): void {
+    const slot = this.schedule.find(s => s.id === slotId);
+    if (slot) {
+      slot.matchId = matchId;
+      slot.status = 'scheduled';
+      slot.updatedAt = new Date().toISOString();
+    }
+  }
+
+  /**
+   * Handle match delay
+   */
+  async handleMatchDelay(slotId: string, delayMinutes: number): Promise<ScheduleResult> {
+    if (!this.schedulingEngine) {
+      throw new Error('Scheduling engine not initialized');
+    }
+
+    return await this.schedulingEngine.rescheduleForDelay(slotId, delayMinutes);
+  }
+
+  /**
+   * Get matches with scheduling info
+   */
+  getScheduledMatches(): ScheduledMatch[] {
+    const matches = this.getMatches();
+    
+    return matches.map(match => {
+      const matchId = `${match.id.s}-${match.id.r}-${match.id.m}`;
+      const slot = this.schedule.find(s => s.matchId === matchId);
+      
+      return {
+        _type: 'match' as const,
+        id: matchId,
+        tournamentId: 'current',
+        tournamentMatchId: match.id,
+        round: match.id.r,
+        teamA: match.p[0] ? this.getPlayerName(match.p[0]) : undefined,
+        teamB: match.p[1] ? this.getPlayerName(match.p[1]) : undefined,
+        isComplete: !!match.m,
+        finalScore: match.m ? { a: match.m[0], b: match.m[1] } : undefined,
+        winner: match.winners?.[0] ? this.getPlayerName(match.winners[0]) : undefined,
+        scheduledSlotId: slot?.id,
+        scheduledStartTime: slot?.startTime,
+        scheduledEndTime: slot?.endTime,
+        scheduledStationId: slot?.stationId,
+        scheduledStationName: slot?.stationName,
+        mediaIds: [],
+        createdAt: new Date().toISOString()
+      };
+    });
+  }
+
+  /**
+   * Check for scheduling conflicts
+   */
+  getSchedulingConflicts(): any[] {
+    if (!this.schedulingEngine) {
+      return [];
+    }
+
+    // This would return conflicts from the last schedule generation
+    return [];
+  }
+
+  /**
+   * Export tournament state including stations and schedule
+   */
+  exportStateWithSchedule(): any {
+    const baseState = this.exportState();
+    
+    return {
+      ...baseState,
+      stations: this.stations,
+      schedule: this.schedule,
+      schedulingConfig: this.schedulingEngine ? {} : null // Would include actual config
+    };
+  }
+
+  /**
+   * Get station utilization stats
+   */
+  getStationUtilization(): { [stationId: string]: number } {
+    const utilization: { [stationId: string]: number } = {};
+    
+    this.stations.forEach(station => {
+      const stationSlots = this.schedule.filter(s => s.stationId === station.id);
+      const totalTime = stationSlots.reduce((sum, slot) => sum + slot.duration, 0);
+      utilization[station.id] = totalTime;
+    });
+    
+    return utilization;
+  }
+
+  /**
+   * Recommend stations for a match based on various factors
+   */
+  recommendStationsForMatch(matchId: string): Station[] {
+    // Simple recommendation logic - can be enhanced
+    const availableStations = this.getAvailableStations();
+    
+    // Sort by least used
+    return availableStations.sort((a, b) => {
+      const aUsage = this.schedule.filter(s => s.stationId === a.id).length;
+      const bUsage = this.schedule.filter(s => s.stationId === b.id).length;
+      return aUsage - bUsage;
+    });
   }
 }

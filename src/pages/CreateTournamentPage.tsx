@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Beer, Calendar, Users, Trophy, ArrowLeft, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/material/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/material/card';
+import { TextField } from '@/components/ui/material/text-field';
+import { FAB } from '@/components/ui/material/fab';
+import { Select } from '@/components/ui/material/select';
 import { useAuth } from '@/context/auth';
 import { trpc } from '@/utils/trpc';
 import { toast } from 'sonner';
@@ -79,14 +81,14 @@ export function CreateTournamentPage() {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-md w-full"
         >
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
+          <Card variant="elevated" elevation={3} className="material-surface-container-highest material-motion-standard">
             <CardHeader className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center">
-                <Trophy className="w-8 h-8 text-white" />
+              <div className="mx-auto w-16 h-16 material-primary-container rounded-full flex items-center justify-center material-motion-standard-decelerate">
+                <Trophy className="w-8 h-8 material-on-primary-container" />
               </div>
               <div>
-                <CardTitle className="text-2xl text-white mb-2">Sign In Required</CardTitle>
-                <CardDescription className="text-gray-300">
+                <CardTitle className="material-headline-medium">Sign In Required</CardTitle>
+                <CardDescription className="material-body-large">
                   You need to sign in to create a tournament
                 </CardDescription>
               </div>
@@ -94,16 +96,20 @@ export function CreateTournamentPage() {
             <CardContent className="space-y-6">
               <Button
                 onClick={() => signIn()}
-                className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold"
+                variant="filled"
+                size="large"
+                fullWidth
+                leadingIcon="login"
               >
                 Sign In with Google
               </Button>
               <Button
-                variant="outline"
+                variant="outlined"
                 onClick={() => navigate('/')}
-                className="w-full h-12 border-white/30 text-white hover:bg-white/10"
+                size="large"
+                fullWidth
+                leadingIcon="arrow_back"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Home
               </Button>
             </CardContent>
@@ -119,11 +125,11 @@ export function CreateTournamentPage() {
       <header className="px-6 py-8">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Button
-            variant="ghost"
+            variant="text"
             onClick={() => navigate('/')}
-            className="text-white hover:bg-white/10 border border-white/20"
+            leadingIcon="arrow_back"
+            className="material-on-surface"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Button>
           <div className="flex items-center gap-2">
@@ -140,36 +146,34 @@ export function CreateTournamentPage() {
           animate={{ opacity: 1, y: 0 }}
           className="max-w-2xl w-full"
         >
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20 shadow-2xl">
+          <Card variant="elevated" elevation={4} className="material-surface-container-highest material-motion-emphasized">
             <CardHeader className="text-center space-y-6 pb-8">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", bounce: 0.5, delay: 0.2 }}
-                className="mx-auto w-20 h-20 bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center"
+                className="mx-auto w-20 h-20 material-primary-container rounded-full flex items-center justify-center"
               >
-                <Trophy className="w-10 h-10 text-white" />
+                <Trophy className="w-10 h-10 material-on-primary-container" />
               </motion.div>
               <div>
-                <CardTitle className="text-4xl text-white mb-3">Create Tournament</CardTitle>
-                <CardDescription className="text-gray-300 text-lg max-w-md mx-auto">
+                <CardTitle className="material-display-small">Create Tournament</CardTitle>
+                <CardDescription className="material-title-large max-w-md mx-auto">
                   Set up your Beer Olympics event and get ready for epic competition
                 </CardDescription>
                 <div className="flex justify-center gap-2 mt-6">
                   <Button
-                    variant={!isMegaTournament ? "default" : "outline"}
+                    variant={!isMegaTournament ? "filled" : "outlined"}
                     onClick={() => setIsMegaTournament(false)}
-                    className={!isMegaTournament ? "bg-amber-500 hover:bg-amber-600" : "border-white/30 text-white hover:bg-white/10"}
+                    leadingIcon="emoji_events"
                   >
-                    <Trophy className="w-4 h-4 mr-2" />
                     Single Tournament
                   </Button>
                   <Button
-                    variant={isMegaTournament ? "default" : "outline"}
+                    variant={isMegaTournament ? "filled" : "outlined"}
                     onClick={() => setIsMegaTournament(true)}
-                    className={isMegaTournament ? "bg-amber-500 hover:bg-amber-600" : "border-white/30 text-white hover:bg-white/10"}
+                    leadingIcon="auto_awesome"
                   >
-                    <Sparkles className="w-4 h-4 mr-2" />
                     Mega Tournament
                   </Button>
                 </div>
@@ -193,11 +197,14 @@ export function CreateTournamentPage() {
                   <Beer className="w-4 h-4 text-amber-400" />
                   Tournament Name
                 </label>
-                <Input
+                <TextField
+                  label="Tournament Name"
                   placeholder="e.g., Summer Beer Olympics 2024"
                   value={tournamentName}
                   onChange={(e) => setTournamentName(e.target.value)}
-                  className="h-14 text-lg bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:bg-white/20 focus:border-amber-400/50 transition-all duration-200"
+                  fullWidth
+                  variant="outlined"
+                  leadingIcon="local_activity"
                 />
               </motion.div>
 
@@ -211,12 +218,15 @@ export function CreateTournamentPage() {
                   <Calendar className="w-4 h-4 text-amber-400" />
                   Tournament Date
                 </label>
-                <Input
+                <TextField
                   type="date"
+                  label="Tournament Date"
                   value={tournamentDate}
                   onChange={(e) => setTournamentDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
-                  className="h-14 text-lg bg-white/10 border-white/20 text-white focus:bg-white/20 focus:border-amber-400/50 transition-all duration-200"
+                  fullWidth
+                  variant="outlined"
+                  leadingIcon="event"
                 />
               </motion.div>
 
@@ -230,18 +240,21 @@ export function CreateTournamentPage() {
                   <Trophy className="w-4 h-4 text-amber-400" />
                   Tournament Format
                 </label>
-                <select
+                <Select
+                  label="Tournament Format"
                   value={tournamentFormat}
-                  onChange={(e) => setTournamentFormat(e.target.value as any)}
-                  className="h-14 w-full text-lg bg-white/10 border border-white/20 text-white focus:bg-white/20 focus:border-amber-400/50 transition-all duration-200 rounded-md px-3"
-                >
-                  <option value="single_elimination" className="bg-gray-800 text-white">Single Elimination</option>
-                  <option value="double_elimination" className="bg-gray-800 text-white">Double Elimination</option>
-                  <option value="round_robin" className="bg-gray-800 text-white">Round Robin</option>
-                  <option value="group_stage" className="bg-gray-800 text-white">Group Stage</option>
-                  <option value="free_for_all" className="bg-gray-800 text-white">Free For All</option>
-                  <option value="masters" className="bg-gray-800 text-white">Masters</option>
-                </select>
+                  onValueChange={(value) => setTournamentFormat(value as any)}
+                  fullWidth
+                  variant="outlined"
+                  options={[
+                    { value: 'single_elimination', label: 'Single Elimination' },
+                    { value: 'double_elimination', label: 'Double Elimination' },
+                    { value: 'round_robin', label: 'Round Robin' },
+                    { value: 'group_stage', label: 'Group Stage' },
+                    { value: 'free_for_all', label: 'Free For All' },
+                    { value: 'masters', label: 'Masters' }
+                  ]}
+                />
               </motion.div>
 
               <motion.div
@@ -254,13 +267,16 @@ export function CreateTournamentPage() {
                   <Users className="w-4 h-4 text-amber-400" />
                   Maximum Teams
                 </label>
-                <Input
+                <TextField
                   type="number"
+                  label="Maximum Teams"
                   min="2"
                   max="128"
                   value={maxTeams}
                   onChange={(e) => setMaxTeams(parseInt(e.target.value) || 8)}
-                  className="h-14 text-lg bg-white/10 border-white/20 text-white focus:bg-white/20 focus:border-amber-400/50 transition-all duration-200"
+                  fullWidth
+                  variant="outlined"
+                  leadingIcon="groups"
                 />
               </motion.div>
 
@@ -268,13 +284,13 @@ export function CreateTournamentPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20 p-6"
+                className="material-surface-container p-6 rounded-xl border material-outline-variant"
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <Users className="w-5 h-5 text-green-400" />
-                  <span className="font-medium text-white">Signed in as: {user.name}</span>
+                  <Users className="w-5 h-5 material-primary" />
+                  <span className="material-title-medium">Signed in as: {user.name}</span>
                 </div>
-                <p className="text-sm text-green-400">
+                <p className="material-body-medium material-on-surface-variant">
                   You'll be the tournament organizer and can manage teams, scoring, and settings.
                 </p>
               </motion.div>
@@ -288,8 +304,11 @@ export function CreateTournamentPage() {
                 <Button
                   onClick={handleCreate}
                   disabled={isCreating}
-                  className="w-full h-16 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200"
-                  size="lg"
+                  variant="filled"
+                  size="large"
+                  fullWidth
+                  leadingIcon={isCreating ? "" : "emoji_events"}
+                  className="material-motion-standard"
                 >
                   {isCreating ? (
                     <div className="flex items-center gap-3">
@@ -297,10 +316,7 @@ export function CreateTournamentPage() {
                       Creating Tournament...
                     </div>
                   ) : (
-                    <div className="flex items-center gap-3">
-                      <Trophy className="w-5 h-5" />
-                      Create Tournament
-                    </div>
+                    "Create Tournament"
                   )}
                 </Button>
               </motion.div>

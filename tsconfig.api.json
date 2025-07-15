@@ -8,19 +8,21 @@
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "strict": true,
-    "declaration": false,
+    "declaration": true,
     "outDir": "./dist",
     "rootDir": ".",
     "baseUrl": ".",
+    "composite": true,
     "paths": {
       "@/*": ["./src/*"]
     }
   },
   "include": [
     "api/**/*",
-    "src/services/auth.ts",
-    "src/services/couchbase.ts",
-    "src/utils/middleware.ts",
+    "src/api/**/*",
+    "src/services/**/*",
+    "src/utils/**/*",
+    "src/lib/**/*",
     "src/types/**/*"
   ],
   "exclude": [

@@ -305,4 +305,237 @@ export const rsvpRouter = router({
         throw new Error('Failed to export RSVPs');
       }
     }),
+
+  // Check-in attendee
+  checkIn: publicProcedure
+    .input(z.object({
+      id: z.string(),
+      method: z.enum(['qr', 'manual', 'self_service']).default('manual'),
+      autoAssignTeam: z.boolean().optional(),
+      isLateArrival: z.boolean().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      try {
+        // Get the RSVP
+        const rsvp = await couchbase.get(input.id);
+        if (!rsvp) {
+          throw new Error('RSVP not found');
+        }
+
+        // Check if already checked in
+        if (rsvp.status === 'checked_in') {
+          throw new Error('Already checked in');
+        }
+
+        // Prepare check-in data
+        const checkInData: any = {
+          ...rsvp,
+          status: 'checked_in',
+          checkedInAt: new Date().toISOString(),
+          checkInMethod: input.method,
+          isLateArrival: input.isLateArrival,
+        };
+
+        // Auto-assign team if requested
+        let teamAssigned = false;
+        let teamName = rsvp.teamName;
+        let tableNumber = null;
+
+        if (input.autoAssignTeam && !rsvp.teamId && rsvp.participationType === 'player') {
+          // Find or create team
+          const teamResult = await findOrCreateTeam(rsvp.tournamentSlug, rsvp);
+          if (teamResult) {
+            checkInData.teamId = teamResult.id;
+            checkInData.teamName = teamResult.name;
+            teamAssigned = true;
+            teamName = teamResult.name;
+            tableNumber = teamResult.tableNumber;
+          }
+        }
+
+        // Update RSVP
+        await couchbase.upsert(input.id, checkInData);
+
+        return {
+          success: true,
+          teamAssigned,
+          teamName,
+          tableNumber,
+          message: 'Check-in successful',
+        };
+      } catch (error) {
+        console.error('Check-in error:', error);
+        throw new Error(error instanceof Error ? error.message : 'Failed to check in');
+      }
+    }),
+
+  // Get check-in status
+  getCheckInStatus: publicProcedure
+    .input(z.object({ tournamentSlug: z.string() }))
+    .query(async ({ input }) => {
+      try {
+        const query = `
+          SELECT META().id, r.*
+          FROM \`beer-olympics\` r
+          WHERE r.type = 'rsvp' 
+          AND r.tournamentSlug = $1
+          ORDER BY r.fullName ASC
+        `;
+        
+        const result = await couchbase.query(query, [input.tournamentSlug]);
+        
+        // Calculate statistics
+        const attendees = result.rows.map((row: any) => ({
+          id: row.id,
+          fullName: row.fullName,
+          email: row.email,
+          phone: row.phone,
+          participationType: row.participationType || 'player',
+          teamName: row.teamName,
+          teamId: row.teamId,
+          checkedInAt: row.checkedInAt,
+          checkInMethod: row.checkInMethod,
+          status: row.status || 'pending',
+          qrCode: row.qrCode,
+          preferredPartner: row.preferredPartner,
+          shirtSize: row.shirtSize,
+          isLateArrival: row.isLateArrival,
+        }));
+
+        const stats = {
+          totalRSVPs: attendees.length,
+          checkedIn: attendees.filter((a: any) => a.status === 'checked_in').length,
+          waitlist: attendees.filter((a: any) => a.status === 'waitlist').length,
+          noShows: attendees.filter((a: any) => a.status === 'no_show').length,
+          capacity: 64, // Default capacity
+          teamsFormed: Math.floor(attendees.filter((a: any) => a.status === 'checked_in' && a.teamId).length / 2),
+          lateArrivals: attendees.filter((a: any) => a.isLateArrival).length,
+        };
+
+        return {
+          success: true,
+          attendees,
+          stats,
+        };
+      } catch (error) {
+        console.error('Get check-in status error:', error);
+        throw new Error('Failed to get check-in status');
+      }
+    }),
+
+  // Manage waitlist
+  manageWaitlist: publicProcedure
+    .input(z.object({
+      tournamentSlug: z.string(),
+      action: z.enum(['add', 'remove', 'promote']),
+      attendeeId: z.string(),
+    }))
+    .mutation(async ({ input }) => {
+      try {
+        const rsvp = await couchbase.get(input.attendeeId);
+        if (!rsvp) {
+          throw new Error('RSVP not found');
+        }
+
+        let updatedData: any = { ...rsvp };
+        let message = '';
+
+        switch (input.action) {
+          case 'add':
+            updatedData.status = 'waitlist';
+            updatedData.waitlistedAt = new Date().toISOString();
+            message = 'Added to waitlist';
+            break;
+          case 'remove':
+            updatedData.status = 'cancelled';
+            message = 'Removed from waitlist';
+            break;
+          case 'promote':
+            updatedData.status = 'pending';
+            delete updatedData.waitlistedAt;
+            message = 'Promoted from waitlist';
+            break;
+        }
+
+        await couchbase.upsert(input.attendeeId, updatedData);
+
+        return {
+          success: true,
+          message,
+        };
+      } catch (error) {
+        console.error('Waitlist management error:', error);
+        throw new Error(error instanceof Error ? error.message : 'Failed to manage waitlist');
+      }
+    }),
 });
+
+// Helper function to find or create team
+async function findOrCreateTeam(tournamentSlug: string, rsvp: any) {
+  try {
+    // Query for incomplete teams
+    const query = `
+      SELECT META().id, t.*
+      FROM \`beer-olympics\` t
+      WHERE t.type = 'team'
+      AND t.tournamentSlug = $1
+      AND ARRAY_LENGTH(t.players) < 2
+      ORDER BY t.createdAt ASC
+    `;
+    
+    const result = await couchbase.query(query, [tournamentSlug]);
+    
+    if (result.rows.length > 0) {
+      // Found incomplete team
+      const team = result.rows[0];
+      
+      // Update team with new player
+      const updatedTeam = {
+        ...team,
+        players: [...(team.players || []), rsvp.id],
+      };
+      
+      await couchbase.upsert(team.id, updatedTeam);
+      
+      return {
+        id: team.id,
+        name: team.name || `Team ${team.number}`,
+        tableNumber: team.tableNumber || Math.ceil(team.number / 2),
+      };
+    } else {
+      // Create new team
+      const teamCountQuery = `
+        SELECT COUNT(*) as count
+        FROM \`beer-olympics\` t
+        WHERE t.type = 'team'
+        AND t.tournamentSlug = $1
+      `;
+      
+      const countResult = await couchbase.query(teamCountQuery, [tournamentSlug]);
+      const teamNumber = (countResult.rows[0]?.count || 0) + 1;
+      
+      const newTeam = {
+        type: 'team',
+        tournamentSlug,
+        name: `Team ${teamNumber}`,
+        number: teamNumber,
+        players: [rsvp.id],
+        skillLevel: rsvp.skillLevel,
+        tableNumber: Math.ceil(teamNumber / 2),
+        createdAt: new Date().toISOString(),
+      };
+      
+      const teamId = `team_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      await couchbase.upsert(teamId, newTeam);
+      
+      return {
+        id: teamId,
+        name: newTeam.name,
+        tableNumber: newTeam.tableNumber,
+      };
+    }
+  } catch (error) {
+    console.error('Failed to find or create team:', error);
+    return null;
+  }
+}

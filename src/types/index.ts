@@ -11,6 +11,7 @@ export interface Team {
   memberIds: string[];
   captainId: string;
   createdAt: string;
+  previousRank?: number;
   // Enhanced fields
   inviteCode?: string;
   qrCodeUrl?: string;
