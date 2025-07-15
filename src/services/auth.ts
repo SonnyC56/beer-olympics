@@ -5,7 +5,7 @@ import type { User } from '../types';
 // Build the redirect URL properly
 const buildRedirectURL = () => {
   const baseUrl = process.env.AUTH_URL || 'http://localhost:5173';
-  return `${baseUrl}/auth/callback`;
+  return `${baseUrl}/api/auth/callback`;
 };
 
 const client = new OAuth2Client(

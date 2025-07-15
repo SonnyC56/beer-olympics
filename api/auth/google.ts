@@ -31,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // In development, use mock auth
       if (process.env.NODE_ENV !== 'production' || process.env.AUTH_URL?.includes('localhost')) {
         const redirectUrl = new URL(process.env.AUTH_URL || 'http://localhost:5173');
-        redirectUrl.pathname = '/auth/callback';
+        redirectUrl.pathname = '/api/auth/callback';
         redirectUrl.searchParams.set('token', 'mock-token-' + Date.now());
         redirectUrl.searchParams.set('user', JSON.stringify({
           id: 'google-user-' + Math.random().toString(36).substring(2, 11),
@@ -55,7 +55,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     
     // Initialize OAuth2Client inside the handler
-    const redirectUri = `${process.env.AUTH_URL || 'http://localhost:5173'}/auth/callback`;
+    const redirectUri = `${process.env.AUTH_URL || 'http://localhost:5173'}/api/auth/callback`;
     
     console.log('Attempting to create OAuth client with:', {
       clientIdSet: !!process.env.GOOGLE_CLIENT_ID,
