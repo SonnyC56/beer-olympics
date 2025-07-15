@@ -26,6 +26,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   
   try {
+    console.log('OAuth callback received:', {
+      hasCode: !!codeParam,
+      codeLength: codeParam?.length,
+      authUrl: process.env.AUTH_URL,
+      hasGoogleCreds: !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET
+    });
+    
     // Verify the Google token and get user info
     const user = await verifyGoogleToken(codeParam);
     
@@ -120,7 +127,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.redirect(302, `${frontendUrl}${redirectTo}`);
   } catch (error) {
     console.error('OAuth callback error:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      type: error instanceof Error ? error.constructor.name : typeof error
+    });
+    
     const frontendUrl = process.env.VITE_APP_URL || process.env.AUTH_URL || 'https://www.beerlympics.io';
-    return res.redirect(302, `${frontendUrl}/?auth_error=callback_failed`);
+    const errorMessage = error instanceof Error ? error.message : 'callback_failed';
+    return res.redirect(302, `${frontendUrl}/?auth_error=${encodeURIComponent(errorMessage)}`);
   }
 }
