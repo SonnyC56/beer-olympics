@@ -97,9 +97,6 @@
   "env": {
     "ENABLE_VC_BUILD": "1"
   },
-  "analytics": {
-    "enable": true
-  },
   "regions": ["iad1"],
   "trailingSlash": false,
   "cleanUrls": true
